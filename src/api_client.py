@@ -1,10 +1,11 @@
 import aiohttp
-import asyncio
 from aiolimiter import AsyncLimiter
 import logging
 import os
 from dotenv import load_dotenv
-from . import formatter
+from .formatter import Formatter
+from .exceptions import FetchDataError
+import asyncio
 
 load_dotenv()
 
@@ -27,37 +28,37 @@ class CBApiClient:
     async def fetch_data(
         self, session: aiohttp.ClientSession, url: str, retry: int = 0
     ) -> dict:
-        async with self.limiter:
-            try:
-                async with session.get(url) as response:
-                    if response.status == 200:
-                        return await response.json()
-                    elif response.status >= 500:
-                        self.logger.error(
-                            f"Server error: {response.status}, retrying..."
-                        )
-                        await asyncio.sleep(2**retry)  # Exponential backoff
-                        return await self.fetch_data(session, url, retry + 1)
-                    else:
-                        self.logger.error(f"Error fetching data: {response.status}")
-                        return None
-            except aiohttp.ClientError as e:
-                self.logger.error(f"An error occurred: {e}")
-                return None
+        """Fetch data from the API."""
+        try:
+            async with session.get(url) as response:
+                if response.status == 200:
+                    return await response.json()
+                elif response.status >= 500:
+                    self.logger.error(f"Server error: {response.status}, retrying...")
+                    await asyncio.sleep(2**retry)  # Exponential backoff
+                    return await self.fetch_data(session, url, retry + 1)
+                else:
+                    self.logger.error(f"Error fetching data: {response.status}")
+                    return None
+        except aiohttp.ClientError as e:
+            self.logger.error(f"An error occurred: {e}")
+            raise FetchDataError("Error fetching data from API") from e
 
     async def fetch_events(self, session: aiohttp.ClientSession, url: str) -> None:
+        """
+        Fetch events from the API.
+
+        Args:
+            session (aiohttp.ClientSession): The aiohttp client session.
+            url (str): The URL to fetch events from.
+        """
         try:
             while True:
                 data = await self.fetch_data(session, url)
                 if data is None:
                     break
 
-                events = data.get("events")
-                if events:
-                    self.logger.debug(f"Received events: {events}")
-
-                    for event in events:
-                        self.process_event(event)
+                self.process_events(data)
 
                 next_url = data.get("nextUrl")
                 if not next_url:
@@ -74,14 +75,15 @@ class CBApiClient:
         event_object = event.get("object")
         self.logger.debug(f"Processing event: {method}, {event_object}")
         if method and event_object:
-            formatter_func = getattr(formatter, f"format_{method}_event", None)
+            formatter_func = getattr(Formatter(), f"format_{method}_event", None)
             if formatter_func:
-                self.logger.debug(f"Calling formatter method for: {method}")
-                formatted_message = formatter_func(event_object)
-                if formatted_message:
-                    self.logger.info(formatted_message)
+                formatted_event = formatter_func(event_object)
+                if formatted_event:
+                    self.logger.info(formatted_event)
                 else:
-                    self.logger.warning(f"No formatted message for method: {method}")
+                    self.logger.warning(
+                        f"Failed to format event: {method}, {event_object}"
+                    )
             else:
                 self.logger.warning(f"No formatter found for method: {method}")
 
@@ -95,15 +97,3 @@ class CBApiClient:
         if not url:
             raise ValueError("The EVENTS_API_URL environment variable is not set.")
         return cls(url)
-
-
-def main() -> None:
-    cb_api_client = CBApiClient.from_env()
-    try:
-        asyncio.run(cb_api_client.run())
-    except KeyboardInterrupt:
-        pass
-
-
-if __name__ == "__main__":
-    main()
