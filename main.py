@@ -1,10 +1,5 @@
 import asyncio
-import logging
 from src.cbapi_client import CBApiClient
-
-
-def configure_logging():
-    logging.basicConfig(level=logging.INFO)  # Configure root logger
 
 
 async def main():
@@ -14,4 +9,7 @@ async def main():
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        pass
