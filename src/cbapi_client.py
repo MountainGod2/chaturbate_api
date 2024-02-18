@@ -1,19 +1,16 @@
 import aiohttp
 from aiolimiter import AsyncLimiter
-import os
 import logging
 import asyncio
-from dotenv import load_dotenv
 import re
-
-load_dotenv()
+import os
 
 
 class CBApiClient:
-    def __init__(self, url):
+    def __init__(self, url, limiter=None, logger=None):
         self.url = url
-        self.logger = self._setup_logger()
-        self.limiter = AsyncLimiter(1000, 60)
+        self.logger = logger or logging.getLogger(__name__)
+        self.limiter = limiter or AsyncLimiter(1000, 60)
         self.formatters = {
             "tip": self.format_tip_event,
             "userLeave": self.format_user_leave_event,
@@ -22,15 +19,6 @@ class CBApiClient:
             "unfollow": self.format_unfollow_event,
             "follow": self.format_follow_event,
         }
-
-    def _setup_logger(self):
-        logger = logging.getLogger(__name__)
-        logger.setLevel(logging.INFO)
-        formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
-        console_handler = logging.StreamHandler()
-        console_handler.setFormatter(formatter)
-        logger.addHandler(console_handler)
-        return logger
 
     async def fetch_data(self, session, url, retry=0):
         async with self.limiter:
@@ -153,13 +141,13 @@ class CBApiClient:
             return f"User {user_info['username']} followed broadcaster {broadcaster}"
         return None
 
-    async def run(self):
-        async with aiohttp.ClientSession() as session:
-            await self.fetch_events(session, self.url)
-
     @classmethod
-    def from_env(cls):
+    def from_env(cls, logger=None):
         url = os.getenv("EVENTS_API_URL")
         if not url:
             raise ValueError("The EVENTS_API_URL environment variable is not set.")
-        return cls(url)
+        return cls(url, logger=logger)
+
+    async def run(self):
+        async with aiohttp.ClientSession() as session:
+            await self.fetch_events(session, self.url)
