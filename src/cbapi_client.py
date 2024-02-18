@@ -1,15 +1,13 @@
 import aiohttp
 from aiolimiter import AsyncLimiter
-import logging
 import asyncio
 import re
 import os
 
 
 class CBApiClient:
-    def __init__(self, url, limiter=None, logger=None):
+    def __init__(self, url, limiter=None):
         self.url = url
-        self.logger = logger or logging.getLogger(__name__)
         self.limiter = limiter or AsyncLimiter(1000, 60)
         self.formatters = {
             "tip": self.format_tip_event,
@@ -27,16 +25,11 @@ class CBApiClient:
                     if response.status == 200:
                         return await response.json()
                     elif response.status >= 500:
-                        self.logger.error(
-                            f"Server error: {response.status}, retrying..."
-                        )
                         await asyncio.sleep(2**retry)  # Exponential backoff
                         return await self.fetch_data(session, url, retry + 1)
                     else:
-                        self.logger.error(f"Error fetching data: {response.status}")
                         return None
-            except aiohttp.ClientError as e:
-                self.logger.error(f"An error occurred: {e}")
+            except aiohttp.ClientError:
                 return None
 
     async def fetch_events(self, session, url):
@@ -48,36 +41,26 @@ class CBApiClient:
 
                 events = data.get("events")
                 if events:
-                    self.logger.debug(f"Received events: {events}")
-
                     for event in events:
-                        self.process_event(event)
+                        yield self.process_event(event)
 
                 next_url = data.get("nextUrl")
                 if not next_url:
-                    self.logger.info("No next URL found. Exiting.")
                     break
 
                 url = next_url
 
-        except aiohttp.ClientError as e:
-            self.logger.error(f"An error occurred: {e}")
+        except aiohttp.ClientError:
+            pass
 
     def process_event(self, event):
         method = event.get("method")
         event_object = event.get("object")
-        self.logger.debug(f"Processing event: {method}, {event_object}")
         if method and event_object:
             formatter = self.formatters.get(method)
             if formatter:
-                self.logger.debug(f"Calling formatter method for: {method}")
-                formatted_message = formatter(event_object)
-                if formatted_message:
-                    self.logger.info(formatted_message)
-                else:
-                    self.logger.warning(f"No formatted message for method: {method}")
-            else:
-                self.logger.warning(f"No formatter found for method: {method}")
+                return formatter(event_object)
+        return None
 
     @staticmethod
     def format_tip_event(event_object):
@@ -87,11 +70,8 @@ class CBApiClient:
 
         if tip_info and user_info and broadcaster:
             message = tip_info.get("message", "")
-
-            # Use regular expressions to remove the prefix and trim spaces around the pipe symbol
             message = re.sub(r"^\s*\|\s*", "", message)
             message_str = f" with message: '{message}'" if message else ""
-
             return f"User {user_info['username']} tipped {tip_info['tokens']} tokens to broadcaster {broadcaster}{message_str}"
         return None
 
@@ -142,12 +122,13 @@ class CBApiClient:
         return None
 
     @classmethod
-    def from_env(cls, logger=None):
+    def from_env(cls):
         url = os.getenv("EVENTS_API_URL")
         if not url:
             raise ValueError("The EVENTS_API_URL environment variable is not set.")
-        return cls(url, logger=logger)
+        return cls(url)
 
-    async def run(self):
+    async def get_formatted_events(self):
         async with aiohttp.ClientSession() as session:
-            await self.fetch_events(session, self.url)
+            async for event in self.fetch_events(session, self.url):
+                yield event
