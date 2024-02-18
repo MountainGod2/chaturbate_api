@@ -19,8 +19,8 @@ class CBApiClient:
         }
 
     @classmethod
-    def from_env(cls):
-        url = os.getenv("EVENTS_API_URL")
+    def from_env(cls, url=None):
+        url = url or os.getenv("EVENTS_API_URL")
         if not url:
             raise ValueError("The EVENTS_API_URL environment variable is not set.")
         return cls(url)
