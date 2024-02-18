@@ -4,33 +4,18 @@ from aiolimiter import AsyncLimiter
 import logging
 import os
 from dotenv import load_dotenv
-from formatter import (
-    format_tip_event,
-    format_user_leave_event,
-    format_user_enter_event,
-    format_chat_message_event,
-    format_unfollow_event,
-    format_follow_event,
-)
+from . import formatter
 
 load_dotenv()
 
 
 class CBApiClient:
-    def __init__(self, url):
+    def __init__(self, url: str):
         self.url = url
         self.logger = self._setup_logger()
         self.limiter = AsyncLimiter(1000, 60)
-        self.formatters = {
-            "tip": format_tip_event,
-            "userLeave": format_user_leave_event,
-            "userEnter": format_user_enter_event,
-            "chatMessage": format_chat_message_event,
-            "unfollow": format_unfollow_event,
-            "follow": format_follow_event,
-        }
 
-    def _setup_logger(self):
+    def _setup_logger(self) -> logging.Logger:
         logger = logging.getLogger(__name__)
         logger.setLevel(logging.INFO)
         formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
@@ -39,7 +24,9 @@ class CBApiClient:
         logger.addHandler(console_handler)
         return logger
 
-    async def fetch_data(self, session, url, retry=0):
+    async def fetch_data(
+        self, session: aiohttp.ClientSession, url: str, retry: int = 0
+    ) -> dict:
         async with self.limiter:
             try:
                 async with session.get(url) as response:
@@ -58,7 +45,7 @@ class CBApiClient:
                 self.logger.error(f"An error occurred: {e}")
                 return None
 
-    async def fetch_events(self, session, url):
+    async def fetch_events(self, session: aiohttp.ClientSession, url: str) -> None:
         try:
             while True:
                 data = await self.fetch_data(session, url)
@@ -82,15 +69,15 @@ class CBApiClient:
         except aiohttp.ClientError as e:
             self.logger.error(f"An error occurred: {e}")
 
-    def process_event(self, event):
+    def process_event(self, event: dict) -> None:
         method = event.get("method")
         event_object = event.get("object")
         self.logger.debug(f"Processing event: {method}, {event_object}")
         if method and event_object:
-            formatter = self.formatters.get(method)
-            if formatter:
+            formatter_func = getattr(formatter, f"format_{method}_event", None)
+            if formatter_func:
                 self.logger.debug(f"Calling formatter method for: {method}")
-                formatted_message = formatter(event_object)
+                formatted_message = formatter_func(event_object)
                 if formatted_message:
                     self.logger.info(formatted_message)
                 else:
@@ -98,19 +85,19 @@ class CBApiClient:
             else:
                 self.logger.warning(f"No formatter found for method: {method}")
 
-    async def run(self):
+    async def run(self) -> None:
         async with aiohttp.ClientSession() as session:
             await self.fetch_events(session, self.url)
 
     @classmethod
-    def from_env(cls):
+    def from_env(cls) -> "CBApiClient":
         url = os.getenv("EVENTS_API_URL")
         if not url:
             raise ValueError("The EVENTS_API_URL environment variable is not set.")
         return cls(url)
 
 
-def main():
+def main() -> None:
     cb_api_client = CBApiClient.from_env()
     try:
         asyncio.run(cb_api_client.run())
