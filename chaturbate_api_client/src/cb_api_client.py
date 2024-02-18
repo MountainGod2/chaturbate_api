@@ -18,6 +18,13 @@ class CBApiClient:
             "follow": self.format_follow_event,
         }
 
+    @classmethod
+    def from_env(cls):
+        url = os.getenv("EVENTS_API_URL")
+        if not url:
+            raise ValueError("The EVENTS_API_URL environment variable is not set.")
+        return cls(url)
+
     async def fetch_data(self, session, url, retry=0):
         async with self.limiter:
             try:
@@ -120,13 +127,6 @@ class CBApiClient:
         if user_info and broadcaster:
             return f"User {user_info['username']} followed broadcaster {broadcaster}"
         return None
-
-    @classmethod
-    def from_env(cls):
-        url = os.getenv("EVENTS_API_URL")
-        if not url:
-            raise ValueError("The EVENTS_API_URL environment variable is not set.")
-        return cls(url)
 
     async def get_formatted_events(self):
         async with aiohttp.ClientSession() as session:
