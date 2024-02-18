@@ -1,5 +1,5 @@
 import asyncio
-from src.cb_api_client import CBApiClient
+from .src.cb_api_client import CBApiClient
 
 
 async def main():
