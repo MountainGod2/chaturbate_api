@@ -1,5 +1,5 @@
 import asyncio
-from .src.cb_api_client import CBApiClient
+from chaturbate_api_client.src.cb_api_client import CBApiClient
 
 
 async def main():
