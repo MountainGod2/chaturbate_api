@@ -9,4 +9,11 @@ class ChaturbateAPIClient:
         self.api_client = CBApiClient.from_env(url)
 
     def get_formatted_events(self):
-        return self.api_client.get_formatted_events()
+        try:
+            return self.api_client.get_formatted_events()
+        except APICallError as e:
+            raise ChaturbateAPIError(f"An error occurred: {e}")
+        except AuthenticationError as e:
+            raise ChaturbateAPIError(f"An error occurred: {e}")
+        except Exception as e:
+            raise ChaturbateAPIError(f"An error occurred: {e}")
