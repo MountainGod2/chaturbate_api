@@ -3,7 +3,7 @@ from chaturbate_api.client import ChaturbateAPIClient
 
 
 async def main():
-    client = ChaturbateAPIClient(url="")
+    client = ChaturbateAPIClient()
     async for event in client.get_formatted_events():
         print(event)
 
