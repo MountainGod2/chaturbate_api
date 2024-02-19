@@ -1,4 +1,6 @@
-# chaturbate_api/api_client.py
+"""
+This module provides a client for the Chaturbate events API.
+"""
 
 import aiohttp
 import asyncio
@@ -8,7 +10,28 @@ from aiolimiter import AsyncLimiter
 
 
 class CBApiClient:
+    """
+    A client for the Chaturbate events API.
+
+    Args:
+        url (str): The URL of the Chaturbate events API.
+        limiter (aiolimiter.AsyncLimiter, optional): An async limiter to use for rate limiting API requests.
+
+    Attributes:
+        url (str): The URL of the Chaturbate events API.
+        limiter (aiolimiter.AsyncLimiter): An async limiter to use for rate limiting API requests.
+        formatters (dict): A dictionary of event formatters.
+    """
+
     def __init__(self, url, limiter=None):
+        """
+        Initialize the client.
+
+        Args:
+            url (str): The URL of the Chaturbate events API.
+            limiter (aiolimiter.AsyncLimiter, optional): An async limiter to use for rate limiting API requests.
+        """
+
         self.url = url
         self.limiter = limiter or AsyncLimiter(1000, 60)
         self.formatters = {
@@ -28,12 +51,34 @@ class CBApiClient:
 
     @classmethod
     def from_env(cls, url=None):
+        """
+        Create a client from the environment.
+
+        Args:
+            url (str, optional): The URL of the Chaturbate events API. If not provided, the URL will be read from the
+                EVENTS_API_URL environment variable.
+
+        Returns:
+            CBApiClient: The client.
+        """
         url = url or os.getenv("EVENTS_API_URL")
         if not url:
             raise ValueError("The EVENTS_API_URL environment variable is not set.")
         return cls(url)
 
     async def fetch_data(self, session, url, retry=0):
+        """
+        Fetch data from the API.
+
+        Args:
+            session (aiohttp.ClientSession): The aiohttp client session to use for the request.
+            url (str): The URL of the API endpoint.
+            retry (int, optional): The number of times the request has been retried.
+
+        Returns:
+            dict: The response data, or None if an error occurred.
+        """
+
         async with self.limiter:
             try:
                 async with session.get(url) as response:
@@ -48,6 +93,17 @@ class CBApiClient:
                 return None
 
     async def fetch_events(self, session, url):
+        """
+        Fetch events from the API.
+
+        Args:
+            session (aiohttp.ClientSession): The aiohttp client session to use for the request.
+            url (str): The URL of the API endpoint.
+
+        Yields:
+            dict: The next event from the API.
+        """
+
         try:
             while True:
                 data = await self.fetch_data(session, url)
@@ -69,6 +125,16 @@ class CBApiClient:
             pass
 
     def process_event(self, event):
+        """
+        Process an event from the API.
+
+        Args:
+            event (dict): The event data.
+
+        Returns:
+            str: The formatted event, or None if the event could not be formatted.
+        """
+
         method = event.get("method")
         event_object = event.get("object")
         if method and event_object:
@@ -78,6 +144,16 @@ class CBApiClient:
         return None
 
     def format_broadcast_start_event(self, event_object):
+        """
+        Format a broadcast start event.
+
+        Args:
+            event_object (dict): The event object.
+
+        Returns:
+            str: The formatted event, or None if the event could not be formatted.
+        """
+
         broadcaster = event_object.get("broadcaster")
 
         if broadcaster:
@@ -85,6 +161,16 @@ class CBApiClient:
         return None
 
     def format_broadcast_stop_event(self, event_object):
+        """
+        Format a broadcast stop event.
+
+        Args:
+            event_object (dict): The event object.
+
+        Returns:
+            str: The formatted event, or None if the event could not be formatted.
+        """
+
         broadcaster = event_object.get("broadcaster")
 
         if broadcaster:
@@ -92,6 +178,16 @@ class CBApiClient:
         return None
 
     def format_chat_message_event(self, event_object):
+        """
+        Format a chat message event.
+
+        Args:
+            event_object (dict): The event object.
+
+        Returns:
+            str: The formatted event, or None if the event could not be formatted.
+        """
+
         message_info = event_object.get("message")
         user_info = event_object.get("user")
         broadcaster = event_object.get("broadcaster")
@@ -101,6 +197,16 @@ class CBApiClient:
         return None
 
     def format_fanclub_join_event(self, event_object):
+        """
+        Format a fan club join event.
+
+        Args:
+            event_object (dict): The event object.
+
+        Returns:
+            str: The formatted event, or None if the event could not be formatted.
+        """
+
         user_info = event_object.get("user")
         broadcaster = event_object.get("broadcaster")
 
@@ -109,6 +215,16 @@ class CBApiClient:
         return None
 
     def format_follow_event(self, event_object):
+        """
+        Format a follow event.
+
+        Args:
+            event_object (dict): The event object.
+
+        Returns:
+            str: The formatted event, or None if the event could not be formatted.
+        """
+
         user_info = event_object.get("user")
         broadcaster = event_object.get("broadcaster")
 
@@ -117,6 +233,16 @@ class CBApiClient:
         return None
 
     def format_media_purchase_event(self, event_object):
+        """
+        Format a media purchase event.
+
+        Args:
+            event_object (dict): The event object.
+
+        Returns:
+            str: The formatted event, or None if the event could not be formatted.
+        """
+
         media_info = event_object.get("media")
         user_info = event_object.get("user")
         broadcaster = event_object.get("broadcaster")
@@ -126,6 +252,16 @@ class CBApiClient:
         return None
 
     def format_private_message_event(self, event_object):
+        """
+        Format a private message event.
+
+        Args:
+            event_object (dict): The event object.
+
+        Returns:
+            str: The formatted event, or None if the event could not be formatted.
+        """
+
         message_info = event_object.get("message")
         user_info = event_object.get("user")
         broadcaster = event_object.get("broadcaster")
@@ -135,6 +271,16 @@ class CBApiClient:
         return None
 
     def format_room_subject_change_event(self, event_object):
+        """
+        Format a room subject change event.
+
+        Args:
+            event_object (dict): The event object.
+
+        Returns:
+            str: The formatted event, or None if the event could not be formatted.
+        """
+
         subject_info = event_object.get("subject")
         broadcaster = event_object.get("broadcaster")
 
@@ -143,6 +289,16 @@ class CBApiClient:
         return None
 
     def format_tip_event(self, event_object):
+        """
+        Format a tip event.
+
+        Args:
+            event_object (dict): The event object.
+
+        Returns:
+            str: The formatted event, or None if the event could not be formatted.
+        """
+
         tip_info = event_object.get("tip")
         user_info = event_object.get("user")
         broadcaster = event_object.get("broadcaster")
@@ -155,6 +311,16 @@ class CBApiClient:
         return None
 
     def format_unfollow_event(self, event_object):
+        """
+        Format an unfollow event.
+
+        Args:
+            event_object (dict): The event object.
+
+        Returns:
+            str: The formatted event, or None if the event could not be formatted.
+        """
+
         user_info = event_object.get("user")
         broadcaster = event_object.get("broadcaster")
 
@@ -163,6 +329,16 @@ class CBApiClient:
         return None
 
     def format_user_enter_event(self, event_object):
+        """
+        Format a user enter event.
+
+        Args:
+            event_object (dict): The event object.
+
+        Returns:
+            str: The formatted event, or None if the event could not be formatted.
+        """
+
         user_info = event_object.get("user")
         broadcaster = event_object.get("broadcaster")
 
@@ -171,6 +347,16 @@ class CBApiClient:
         return None
 
     def format_user_leave_event(self, event_object):
+        """
+        Format a user leave event.
+
+        Args:
+            event_object (dict): The event object.
+
+        Returns:
+            str: The formatted event, or None if the event could not be formatted.
+        """
+
         user_info = event_object.get("user")
         broadcaster = event_object.get("broadcaster")
 
@@ -179,6 +365,13 @@ class CBApiClient:
         return None
 
     async def get_formatted_events(self):
+        """
+        Get formatted events from the Chaturbate API.
+
+        Yields:
+            str: The next formatted event from the API.
+        """
+
         async with aiohttp.ClientSession() as session:
             async for event in self.fetch_events(session, self.url):
                 yield event
