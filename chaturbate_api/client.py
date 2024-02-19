@@ -1,11 +1,22 @@
-"""Module defining the Chaturbate API client."""
+"""
+A client for the Chaturbate API.
+"""
 
 from .api_client import CBApiClient
 from .exceptions import ChaturbateAPIError, APICallError, AuthenticationError
 
 
 class ChaturbateAPIClient:
-    """Client for interacting with the Chaturbate API."""
+    """
+    A client for the Chaturbate API.
+
+    Args:
+        url (str, optional): The URL of the Chaturbate events API. If not provided, the URL will be read from the
+            EVENTS_API_URL environment variable.
+
+    Attributes:
+        api_client (CBApiClient): The underlying API client.
+    """
 
     def __init__(self, url=None):
         """
@@ -15,21 +26,25 @@ class ChaturbateAPIClient:
             url (str, optional): The URL of the Chaturbate events API. If not provided, the URL will be read from the
                 EVENTS_API_URL environment variable.
         """
+
         self.api_client = CBApiClient.from_env(url)
 
-    async def get_formatted_events(self):
+    def get_formatted_events(self):
         """
         Get formatted events from the Chaturbate API.
 
         Yields:
-            str: The next formatted event from the API.
+            dict: The next formatted event from the API.
 
         Raises:
-            ChaturbateAPIError: An error occurred during API interaction.
+            ChaturbateAPIError: An error occurred.
         """
+
         try:
-            async with self.api_client.get_formatted_events() as events:
-                async for event in events:
-                    yield event
-        except (APICallError, AuthenticationError) as e:
+            return self.api_client.get_formatted_events()
+        except APICallError as e:
+            raise ChaturbateAPIError(f"An error occurred: {e}")
+        except AuthenticationError as e:
+            raise ChaturbateAPIError(f"An error occurred: {e}")
+        except Exception as e:
             raise ChaturbateAPIError(f"An error occurred: {e}")

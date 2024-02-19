@@ -1,4 +1,6 @@
-"""Module providing a low-level client for interacting with the Chaturbate events API."""
+"""
+This module provides a client for the Chaturbate events API.
+"""
 
 import aiohttp
 import asyncio
