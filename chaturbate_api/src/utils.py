@@ -1,3 +1,4 @@
+"""Event handlers for Chaturbate API events."""
 from src.event_handlers import (
     BroadcastStartEventHandler,
     BroadcastStopEventHandler,
