@@ -1,3 +1,5 @@
+import asyncio
+
 import aiohttp
 from aiolimiter import AsyncLimiter
 
@@ -26,18 +28,23 @@ class ChaturbateAPIPoller:
         :return: URL to the next page of events
         """
         limiter = AsyncLimiter(API_REQUEST_LIMIT, API_REQUEST_PERIOD)
-        async with limiter:
-            async with aiohttp.ClientSession() as session:
-                try:
-                    async with session.get(url) as response:
-                        if response.status == 200:
-                            json_response = await response.json()
-                            await self.process_events(json_response)
-                            url = json_response.get("nextUrl")
-                        else:
-                            raise ValueError(f"Error: {response.status}")
-                except aiohttp.ClientError as e:
-                    raise ValueError(f"Error: {e}")
+        async with limiter, aiohttp.ClientSession() as session:
+            try:
+                async with session.get(url) as response:
+                    if response.status == 200:
+                        json_response = await response.json()
+                        await self.process_events(json_response)
+                        url = json_response.get("nextUrl")
+                    if response.status == 404:
+                        url = None
+                    if response.status >= 500:
+                        # Retry on server errors
+                        print(f"Error: {response.status}, retrying in 5 seconds")
+                        await asyncio.sleep(5)
+                    else:
+                        raise ValueError(f"Error: {response.status}")
+            except aiohttp.ClientError as e:
+                raise ValueError(f"Error: {e}")
 
         return url
 
