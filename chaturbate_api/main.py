@@ -2,7 +2,7 @@ import asyncio
 import os
 
 from dotenv import load_dotenv
-from .src.poller import ChaturbateAPIPoller
+from src.poller import ChaturbateAPIPoller
 
 
 async def main():
