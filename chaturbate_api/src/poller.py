@@ -1,5 +1,6 @@
 import aiohttp
 from aiolimiter import AsyncLimiter
+
 from .event_handlers import event_handlers
 
 API_REQUEST_LIMIT = 2000
