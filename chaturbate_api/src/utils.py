@@ -1,16 +1,16 @@
 from src.event_handlers import (
     BroadcastStartEventHandler,
     BroadcastStopEventHandler,
+    ChatMessageEventHandler,
+    FanclubJoinEventHandler,
+    FollowEventHandler,
+    MediaPurchaseEventHandler,
+    PrivateMessageEventHandler,
+    RoomSubjectChangeEventHandler,
+    TipEventHandler,
+    UnfollowEventHandler,
     UserEnterEventHandler,
     UserLeaveEventHandler,
-    FollowEventHandler,
-    UnfollowEventHandler,
-    FanclubJoinEventHandler,
-    ChatMessageEventHandler,
-    PrivateMessageEventHandler,
-    TipEventHandler,
-    RoomSubjectChangeEventHandler,
-    MediaPurchaseEventHandler,
 )
 
 event_handlers = {

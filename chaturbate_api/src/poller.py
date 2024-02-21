@@ -1,6 +1,7 @@
 """Chaturbate API Poller module."""
 import aiohttp
 from aiolimiter import AsyncLimiter
+
 from .utils import event_handlers
 
 API_REQUEST_LIMIT = 2000
