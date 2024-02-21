@@ -116,3 +116,19 @@ class MediaPurchaseEventHandler:
         media_type = message["object"]["media"]["type"]
         media_name = message["object"]["media"]["name"]
         print(f"{username} has purchased {media_type} set: {media_name}")
+
+
+event_handlers = {
+    "broadcastStart": BroadcastStartEventHandler,
+    "broadcastStop": BroadcastStopEventHandler,
+    "userEnter": UserEnterEventHandler,
+    "userLeave": UserLeaveEventHandler,
+    "follow": FollowEventHandler,
+    "unfollow": UnfollowEventHandler,
+    "fanclubJoin": FanclubJoinEventHandler,
+    "chatMessage": ChatMessageEventHandler,
+    "privateMessage": PrivateMessageEventHandler,
+    "tip": TipEventHandler,
+    "roomSubjectChange": RoomSubjectChangeEventHandler,
+    "mediaPurchase": MediaPurchaseEventHandler,
+}

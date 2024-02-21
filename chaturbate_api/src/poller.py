@@ -1,8 +1,6 @@
-"""Chaturbate API Poller module."""
 import aiohttp
 from aiolimiter import AsyncLimiter
-
-from .utils import event_handlers
+from .event_handlers import event_handlers
 
 API_REQUEST_LIMIT = 2000
 API_REQUEST_PERIOD = 60
@@ -36,11 +34,10 @@ class ChaturbateAPIPoller:
                             await self.process_events(json_response)
                             url = json_response.get("nextUrl")
                         else:
-                            print("Error:", response.status)
-                            return None
-                except Exception as e:
-                    print("Error:", e)
-                    return None
+                            raise ValueError(f"Error: {response.status}")
+                except aiohttp.ClientError as e:
+                    raise ValueError(f"Error: {e}")
+
         return url
 
     async def process_events(self, json_response) -> None:
