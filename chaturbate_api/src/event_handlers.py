@@ -1,4 +1,4 @@
-"""Event handlers for Chaturbate API"""
+"""Module containing event handlers for Chaturbate API."""
 
 
 class BroadcastStartEventHandler:
