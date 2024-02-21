@@ -1,61 +1,82 @@
+"""Event handlers for Chaturbate API"""
+
+
 class BroadcastStartEventHandler:
+    """Handle broadcast start event"""
+
     @staticmethod
-    async def handle(message):
+    async def handle(message) -> None:
         print("Broadcast started")
 
 
 class BroadcastStopEventHandler:
+    """Handle broadcast stop event"""
+
     @staticmethod
-    async def handle(message):
+    async def handle(message) -> None:
         print("Broadcast stopped")
 
 
 class UserEnterEventHandler:
+    """Handle user enter event"""
+
     @staticmethod
-    async def handle(message):
+    async def handle(message) -> None:
         username = message["object"]["user"]["username"]
         print(f"{username} entered the room")
 
 
 class UserLeaveEventHandler:
+    """Handle user leave event"""
+
     @staticmethod
-    async def handle(message):
+    async def handle(message) -> None:
         username = message["object"]["user"]["username"]
         print(f"{username} left the room")
 
 
 class FollowEventHandler:
+    """Handle follow event"""
+
     @staticmethod
-    async def handle(message):
+    async def handle(message) -> None:
         username = message["object"]["user"]["username"]
         print(f"{username} has followed")
 
 
 class UnfollowEventHandler:
+    """Handle unfollow event"""
+
     @staticmethod
-    async def handle(message):
+    async def handle(message) -> None:
         username = message["object"]["user"]["username"]
         print(f"{username} has unfollowed")
 
 
 class FanclubJoinEventHandler:
+    """Handle fanclub join event"""
+
     @staticmethod
-    async def handle(message):
+    async def handle(message) -> None:
         username = message["object"]["user"]["username"]
         print(f"{username} joined the fanclub")
 
 
 class ChatMessageEventHandler:
+    """Handle chat message event"""
+
     @staticmethod
-    async def handle(message):
+    async def handle(message) -> None:
         username = message["object"]["user"]["username"]
         chat_message = message["object"]["message"]["message"]
         print(f"{username}: sent chat message: {chat_message}")
 
 
 class PrivateMessageEventHandler:
+    """Handle private message event"""
+
     @staticmethod
-    async def handle(message):
+    async def handle(message) -> None:
         from_user = message["object"]["message"]["fromUser"]
         to_user = message["object"]["message"]["toUser"]
         private_message = message["object"]["message"]["message"]
@@ -63,8 +84,10 @@ class PrivateMessageEventHandler:
 
 
 class TipEventHandler:
+    """Handle tip event"""
+
     @staticmethod
-    async def handle(message):
+    async def handle(message) -> None:
         username = message["object"]["user"]["username"]
         tokens = message["object"]["tip"]["tokens"]
         is_anonymous = message["object"]["tip"].get("isAnon", False)
@@ -76,15 +99,19 @@ class TipEventHandler:
 
 
 class RoomSubjectChangeEventHandler:
+    """Handle room subject change event"""
+
     @staticmethod
-    async def handle(message):
+    async def handle(message) -> None:
         subject = message["object"]["subject"]
         print(f"Room subject changed to: {subject}")
 
 
 class MediaPurchaseEventHandler:
+    """Handle media purchase event"""
+
     @staticmethod
-    async def handle(message):
+    async def handle(message) -> None:
         username = message["object"]["user"]["username"]
         media_type = message["object"]["media"]["type"]
         media_name = message["object"]["media"]["name"]
