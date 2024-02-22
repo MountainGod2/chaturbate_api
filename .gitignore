@@ -32,3 +32,5 @@ output.txt
 
 # Ruff
 .ruff_cache/
+
+.gptignore
