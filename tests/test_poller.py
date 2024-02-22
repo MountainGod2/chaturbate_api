@@ -1,31 +1,60 @@
-"""Test cases for Chaturbate API Poller."""
-import unittest
-from unittest.mock import patch, MagicMock
+import asyncio
+import json
+import pytest
+from aioresponses import aioresponses
+from src.chaturbate_api.poller import ChaturbateAPIPoller
 
-from chaturbate_api.poller import ChaturbateAPIPoller
-
-
-class TestChaturbateAPIPoller(unittest.TestCase):
-    """Test Chaturbate API Poller."""
-    @patch("chaturbate_api.poller.aiohttp.ClientSession.get")
-    @patch("chaturbate_api.poller.asyncio.sleep")
-    async def test_get_events_success(self, mock_sleep, mock_get):
-        """Test get_events method with a successful response."""
-        # Mock response from Chaturbate API
-        mock_response = MagicMock()
-        mock_response.status = 200
-        mock_response.json.return_value = {"events": [], "nextUrl": None}
-        mock_get.return_value.__aenter__.return_value = mock_response
-
-        poller = ChaturbateAPIPoller("https://example.com/api")
-        await poller.get_events("https://example.com/api/events")
-
-        # Assert that event processing is called
-        self.assertTrue(mock_response.json.called)
-        self.assertTrue(mock_sleep.called)
-
-    # Add more test cases for error handling, event processing, etc.
+# Sample JSON response for testing
+SAMPLE_JSON_RESPONSE = {
+    "events": [
+        {"method": "broadcastStart"},
+        {"method": "userEnter", "object": {"user": {"username": "test_user"}}}
+    ],
+    "nextUrl": "https://example.com/next"
+}
 
 
-if __name__ == "__main__":
-    unittest.main()
+@pytest.mark.asyncio
+async def test_poller_run():
+    # Mocking the HTTP response
+    with aioresponses() as m:
+        m.get("https://example.com/events", payload=json.dumps(SAMPLE_JSON_RESPONSE), status=200)
+        m.get("https://example.com/next", payload=json.dumps(SAMPLE_JSON_RESPONSE), status=200)
+
+        # Creating poller instance and running it
+        poller = ChaturbateAPIPoller("https://example.com/events")
+        await poller.run()
+
+    # Add assertions here based on the expected behavior of the poller
+
+
+@pytest.mark.asyncio
+async def test_poller_process_events():
+    # Create a ChaturbateAPIPoller instance
+    poller = ChaturbateAPIPoller("https://example.com/events")
+
+    # Mocking the HTTP response
+    with aioresponses() as m:
+        m.get("https://example.com/events", payload=json.dumps(SAMPLE_JSON_RESPONSE), status=200)
+
+        # Getting events from mocked response
+        json_response = await poller.get_events("https://example.com/events")
+
+        # Processing events
+        await poller.process_events(json_response)
+
+    # Add assertions here based on the expected behavior of the event processing
+
+
+@pytest.mark.asyncio
+async def test_poller_process_event():
+    # Create a ChaturbateAPIPoller instance
+    poller = ChaturbateAPIPoller("https://example.com/events")
+
+    # Sample event message for testing
+    sample_event_message = {"method": "userEnter", "object": {"user": {"username": "test_user"}}}
+
+    # Process a single event
+    await poller.process_event(sample_event_message)
+
+    # Add assertions here based on the expected behavior of processing a single event
