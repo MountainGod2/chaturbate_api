@@ -5,7 +5,8 @@ class BroadcastStartEventHandler:
     """Handle broadcast start event"""
 
     @staticmethod
-    async def handle(message) -> None:
+    async def handle() -> None:
+        """Handle broadcast start event."""
         print("Broadcast started")
 
 
@@ -13,7 +14,8 @@ class BroadcastStopEventHandler:
     """Handle broadcast stop event"""
 
     @staticmethod
-    async def handle(message) -> None:
+    async def handle() -> None:
+        """Handle broadcast stop event"""
         print("Broadcast stopped")
 
 
@@ -22,6 +24,7 @@ class UserEnterEventHandler:
 
     @staticmethod
     async def handle(message) -> None:
+        """Handle user enter event"""
         username = message["object"]["user"]["username"]
         print(f"{username} entered the room")
 
@@ -31,6 +34,7 @@ class UserLeaveEventHandler:
 
     @staticmethod
     async def handle(message) -> None:
+        """Handle user leave event"""
         username = message["object"]["user"]["username"]
         print(f"{username} left the room")
 
@@ -40,6 +44,7 @@ class FollowEventHandler:
 
     @staticmethod
     async def handle(message) -> None:
+        """Handle follow event"""
         username = message["object"]["user"]["username"]
         print(f"{username} has followed")
 
@@ -49,6 +54,7 @@ class UnfollowEventHandler:
 
     @staticmethod
     async def handle(message) -> None:
+        """Handle unfollow event"""
         username = message["object"]["user"]["username"]
         print(f"{username} has unfollowed")
 
@@ -58,6 +64,7 @@ class FanclubJoinEventHandler:
 
     @staticmethod
     async def handle(message) -> None:
+        """Handle fanclub join event"""
         username = message["object"]["user"]["username"]
         print(f"{username} joined the fanclub")
 
@@ -67,6 +74,7 @@ class ChatMessageEventHandler:
 
     @staticmethod
     async def handle(message) -> None:
+        """Handle chat message event"""
         username = message["object"]["user"]["username"]
         chat_message = message["object"]["message"]["message"]
         print(f"{username}: sent chat message: {chat_message}")
@@ -77,6 +85,7 @@ class PrivateMessageEventHandler:
 
     @staticmethod
     async def handle(message) -> None:
+        """Handle private message event"""
         from_user = message["object"]["message"]["fromUser"]
         to_user = message["object"]["message"]["toUser"]
         private_message = message["object"]["message"]["message"]
@@ -88,6 +97,7 @@ class TipEventHandler:
 
     @staticmethod
     async def handle(message) -> None:
+        """Handle tip event"""
         username = message["object"]["user"]["username"]
         tokens = message["object"]["tip"]["tokens"]
         is_anonymous = message["object"]["tip"].get("isAnon", False)
@@ -103,6 +113,7 @@ class RoomSubjectChangeEventHandler:
 
     @staticmethod
     async def handle(message) -> None:
+        """Handle room subject change event"""
         subject = message["object"]["subject"]
         print(f"Room subject changed to: {subject}")
 
@@ -112,6 +123,7 @@ class MediaPurchaseEventHandler:
 
     @staticmethod
     async def handle(message) -> None:
+        """Handle media purchase event"""
         username = message["object"]["user"]["username"]
         media_type = message["object"]["media"]["type"]
         media_name = message["object"]["media"]["name"]

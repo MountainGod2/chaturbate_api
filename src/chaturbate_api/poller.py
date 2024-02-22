@@ -41,7 +41,7 @@ class ChaturbateAPIPoller:
                     else:
                         raise ValueError(f"Error: {response.status}")
             except aiohttp.ClientError as e:
-                raise ValueError(f"Error: {e}")
+                raise ValueError(f"Error: {e}") from e
 
         return url
 

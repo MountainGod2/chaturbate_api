@@ -1,9 +1,8 @@
 """Main module for running the Chaturbate API poller."""
-import asyncio
 import os
 
 from dotenv import load_dotenv
-from src.poller import ChaturbateAPIPoller
+from .poller import ChaturbateAPIPoller
 
 
 async def main():
