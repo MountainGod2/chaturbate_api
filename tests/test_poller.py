@@ -1,4 +1,4 @@
-import asyncio
+"""Tests for the ChaturbateAPIPoller class."""
 import json
 import pytest
 from aioresponses import aioresponses
@@ -16,6 +16,7 @@ SAMPLE_JSON_RESPONSE = {
 
 @pytest.mark.asyncio
 async def test_poller_run():
+    """Test the run method of the ChaturbateAPIPoller."""
     # Mocking the HTTP response
     with aioresponses() as m:
         m.get("https://example.com/events", payload=json.dumps(SAMPLE_JSON_RESPONSE), status=200)
@@ -30,6 +31,7 @@ async def test_poller_run():
 
 @pytest.mark.asyncio
 async def test_poller_process_events():
+    """Test the process_events method of the ChaturbateAPIPoller."""
     # Create a ChaturbateAPIPoller instance
     poller = ChaturbateAPIPoller("https://example.com/events")
 
@@ -48,6 +50,7 @@ async def test_poller_process_events():
 
 @pytest.mark.asyncio
 async def test_poller_process_event():
+    """Test the process_event method of the ChaturbateAPIPoller."""
     # Create a ChaturbateAPIPoller instance
     poller = ChaturbateAPIPoller("https://example.com/events")
 
