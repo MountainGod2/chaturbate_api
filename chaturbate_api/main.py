@@ -3,7 +3,6 @@ import asyncio
 import os
 
 from dotenv import load_dotenv
-
 from src.poller import ChaturbateAPIPoller
 
 
