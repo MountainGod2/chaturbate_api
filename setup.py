@@ -3,10 +3,10 @@ from setuptools import find_packages, setup
 
 setup(
     name="chaturbate-api",
-    version="0.0.1",
+    version="0.1.0",
     packages=find_packages(),
     install_requires=["aiohttp", "aiolimiter", "python-dotenv"],
-    entry_points={"console_scripts": ["chaturbate-poller = src.chaturbate_api.main:main"]},
+    entry_points={"console_scripts": ["chaturbate-poller = chaturbate_api.main:main"]},
     author="MountainGod2",
     author_email="admin@reid.ca",
     description="Chaturbate API integration",

@@ -2,7 +2,7 @@
 import os
 
 from dotenv import load_dotenv
-from poller import ChaturbateAPIPoller
+from chaturbate_api.poller import ChaturbateAPIPoller
 
 
 async def main():
