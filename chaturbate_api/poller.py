@@ -6,7 +6,7 @@ import json
 import aiohttp
 from aiolimiter import AsyncLimiter
 
-from .event_handlers import event_handlers
+from event_handlers import event_handlers
 
 API_REQUEST_LIMIT = 2000
 API_REQUEST_PERIOD = 60
