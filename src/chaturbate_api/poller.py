@@ -1,6 +1,7 @@
 """Module containing Chaturbate API poller."""
 import asyncio
 from typing import Any, Dict
+import json
 
 import aiohttp
 from aiolimiter import AsyncLimiter
@@ -31,9 +32,12 @@ class ChaturbateAPIPoller:
             try:
                 async with session.get(url) as response:
                     if response.status == 200:
-                        json_response = await response.json()
-                        await self.process_events(json_response)
-                        url = json_response.get("nextUrl")
+                        try:
+                            json_response = await response.json()
+                            await self.process_events(json_response)
+                            url = json_response.get("nextUrl")
+                        except json.JSONDecodeError as e:
+                            print(f"Error decoding JSON response: {e}")
                     elif response.status == 404:
                         url = None
                     elif response.status >= 500:
@@ -44,6 +48,7 @@ class ChaturbateAPIPoller:
                 raise ValueError(f"Error: {e}") from e
 
         return url
+
 
     async def process_events(self, json_response: Dict[str, Any]) -> None:
         """Process events from the Chaturbate API."""

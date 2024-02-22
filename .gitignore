@@ -34,3 +34,4 @@ output.txt
 .ruff_cache/
 
 .gptignore
+.vscode/
