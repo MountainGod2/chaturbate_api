@@ -6,8 +6,8 @@ import json
 import aiohttp
 from aiolimiter import AsyncLimiter
 
-from chaturbate_api.event_handlers import event_handlers
-from chaturbate_api.constants import API_REQUEST_LIMIT, API_REQUEST_PERIOD
+from .event_handlers import event_handlers
+from .constants import API_REQUEST_LIMIT, API_REQUEST_PERIOD
 
 
 class ChaturbateAPIPoller:

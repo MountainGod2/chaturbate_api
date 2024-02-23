@@ -1,5 +1,9 @@
-"""Setup file for the chaturbate-api package."""
 from setuptools import find_packages, setup
+
+# Read the contents of your README file
+with open("README.md", "r", encoding="utf-8") as fh:
+    long_description = fh.read()
+
 
 setup(
     name="chaturbate_api",
@@ -14,6 +18,15 @@ setup(
     author="MountainGod2",
     author_email="admin@reid.ca",
     description="Chaturbate API integration",
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     url="https://github.com/MountainGod2/chaturbate-api",
     license="MIT",
+    classifiers=[
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
+        "Development Status :: 4 - Beta",
+    ],
+    keywords="chaturbate api asyncio",
 )

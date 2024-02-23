@@ -1,6 +1,6 @@
 # Chaturbate API Integration
 
-This project provides an integration with the Chaturbate API, allowing for the polling of various events such as broadcast starts, user entries, and more. The integration is built with Python using asynchronous programming techniques for efficient event handling.
+This project provides an integration with the Chaturbate API, allowing for the polling of various events such as broadcast starts, user entries, and more. It uses async for event handling.
 
 ## Features
 
