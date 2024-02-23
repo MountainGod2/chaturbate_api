@@ -7,9 +7,7 @@ import aiohttp
 from aiolimiter import AsyncLimiter
 
 from chaturbate_api.event_handlers import event_handlers
-
-API_REQUEST_LIMIT = 2000
-API_REQUEST_PERIOD = 60
+from chaturbate_api.constants import API_REQUEST_LIMIT, API_REQUEST_PERIOD
 
 
 class ChaturbateAPIPoller:
@@ -48,7 +46,6 @@ class ChaturbateAPIPoller:
                 raise ValueError(f"Error: {e}") from e
 
         return url
-
 
     async def process_events(self, json_response: Dict[str, Any]) -> None:
         """Process events from the Chaturbate API."""
