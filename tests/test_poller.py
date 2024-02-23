@@ -2,15 +2,15 @@
 import json
 import pytest
 from aioresponses import aioresponses
-from src.chaturbate_api.poller import ChaturbateAPIPoller
+from chaturbate_api.poller import ChaturbateAPIPoller
 
 # Sample JSON response for testing
 SAMPLE_JSON_RESPONSE = {
     "events": [
         {"method": "broadcastStart"},
-        {"method": "userEnter", "object": {"user": {"username": "test_user"}}}
+        {"method": "userEnter", "object": {"user": {"username": "test_user"}}},
     ],
-    "nextUrl": "https://example.com/next"
+    "nextUrl": "https://example.com/next",
 }
 
 
@@ -19,8 +19,16 @@ async def test_poller_run():
     """Test the run method of the ChaturbateAPIPoller."""
     # Mocking the HTTP response
     with aioresponses() as m:
-        m.get("https://example.com/events", payload=json.dumps(SAMPLE_JSON_RESPONSE), status=200)
-        m.get("https://example.com/next", payload=json.dumps(SAMPLE_JSON_RESPONSE), status=200)
+        m.get(
+            "https://example.com/events",
+            payload=json.dumps(SAMPLE_JSON_RESPONSE),
+            status=200,
+        )
+        m.get(
+            "https://example.com/next",
+            payload=json.dumps(SAMPLE_JSON_RESPONSE),
+            status=200,
+        )
 
         # Creating poller instance and running it
         poller = ChaturbateAPIPoller("https://example.com/events")
@@ -37,7 +45,11 @@ async def test_poller_process_events():
 
     # Mocking the HTTP response
     with aioresponses() as m:
-        m.get("https://example.com/events", payload=json.dumps(SAMPLE_JSON_RESPONSE), status=200)
+        m.get(
+            "https://example.com/events",
+            payload=json.dumps(SAMPLE_JSON_RESPONSE),
+            status=200,
+        )
 
         # Getting events from mocked response
         json_response = await poller.get_events("https://example.com/events")
@@ -55,7 +67,10 @@ async def test_poller_process_event():
     poller = ChaturbateAPIPoller("https://example.com/events")
 
     # Sample event message for testing
-    sample_event_message = {"method": "userEnter", "object": {"user": {"username": "test_user"}}}
+    sample_event_message = {
+        "method": "userEnter",
+        "object": {"user": {"username": "test_user"}},
+    }
 
     # Process a single event
     await poller.process_event(sample_event_message)
