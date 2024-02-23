@@ -5,6 +5,7 @@ import os
 from dotenv import load_dotenv
 from chaturbate_api.poller import ChaturbateAPIPoller
 
+
 async def main():
     """Main entry point of the application."""
     load_dotenv()
@@ -15,5 +16,9 @@ async def main():
     poller = ChaturbateAPIPoller(base_url)
     await poller.run()
 
+
 if __name__ == "__main__":
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        pass
