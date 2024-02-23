@@ -1,8 +1,9 @@
-from dotenv import load_dotenv
-import os
-from chaturbate_api.api_poller import ChaturbateAPIPoller
-
 import asyncio
+import os
+
+from dotenv import load_dotenv
+
+from chaturbate_api.api_poller import ChaturbateAPIPoller
 
 
 async def main():

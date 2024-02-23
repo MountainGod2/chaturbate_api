@@ -1,13 +1,13 @@
 """Module containing Chaturbate API poller."""
 import asyncio
-from typing import Any, Dict
 import json
+from typing import Any, Dict
 
 import aiohttp
 from aiolimiter import AsyncLimiter
 
-from .event_handlers import event_handlers
 from .constants import API_REQUEST_LIMIT, API_REQUEST_PERIOD
+from .event_handlers import event_handlers
 
 
 class ChaturbateAPIPoller:

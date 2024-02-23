@@ -1,3 +1,4 @@
 aiohttp==3.9.3
 python-dotenv==1.0.1
 aiolimiter==1.1.0
+pre-commit==3.6.2
