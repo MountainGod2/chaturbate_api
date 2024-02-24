@@ -11,6 +11,14 @@ async def main():
     load_dotenv()
     base_url = os.getenv("EVENTS_API_URL")
     if not base_url:
+        print(
+            "You can get the URL from the Chatubate settings here: https://chaturbate.com/statsapi/authtoken/"
+        )
+        print()
+        print("Set the URL in the .env file like this:")
+        print("EVENTS_API_URL=https://chaturbate.com/api/v1/events/")
+        print("Then run the poller again.")
+        print()
         raise ValueError("EVENTS_API_URL not set in .env file")
     # Start the poller
     poller = ChaturbateAPIPoller(base_url)
