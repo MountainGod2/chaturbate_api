@@ -12,6 +12,7 @@ async def main():
     load_dotenv()
     base_url = os.getenv("EVENTS_API_URL")
 
+    # Check if the base URL is set
     if not base_url:
         raise BaseURLNotFound
 
