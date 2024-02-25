@@ -42,6 +42,7 @@ async def shutdown(signal, loop):
 if __name__ == "__main__":
     try:
         # Set up event loop
+        logger.info("Starting Chaturbate API Poller...")
         loop = asyncio.get_event_loop()
 
         # Register signal handlers
@@ -52,6 +53,8 @@ if __name__ == "__main__":
 
         # Run the main coroutine
         loop.run_until_complete(main())
+    except (KeyboardInterrupt, asyncio.CancelledError):
+        logger.info("Received exit signal, exiting...")
     except Exception as e:
         logger.error(f"An error occurred: {e}")
     finally:
