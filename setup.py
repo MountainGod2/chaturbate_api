@@ -9,7 +9,13 @@ setup(
     name="chaturbate_api",
     version="0.1.0",
     packages=find_packages(),
-    install_requires=["aiohttp", "aiolimiter", "python-dotenv"],
+    install_requires=[
+        "aiohttp",
+        "aiolimiter",
+        "python-dotenv",
+        "asynctest",
+        "pre-commit",
+    ],
     entry_points={
         "console_scripts": [
             "chaturbate-api=chaturbate_api.__main__:main",
