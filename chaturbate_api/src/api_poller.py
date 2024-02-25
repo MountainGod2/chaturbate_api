@@ -13,7 +13,8 @@ logger = logging.getLogger(__name__)
 
 
 class ChaturbateAPIPoller:
-    """Chaturbate API Poller.
+    """
+    Chaturbate API Poller.
 
     This class represents a poller for retrieving events from the Chaturbate API.
     It provides methods to initialize the poller, start the poller, and handle events.
@@ -36,7 +37,8 @@ class ChaturbateAPIPoller:
         self.base_url = base_url
 
     async def run(self) -> None:
-        """Start the poller.
+        """
+        Start the poller.
 
         This method starts the poller and continuously retrieves events from the specified URL.
 
@@ -48,7 +50,8 @@ class ChaturbateAPIPoller:
             url = await self.get_events(url)
 
     async def get_events(self, url: str) -> str:
-        """Get events from the Chaturbate API.
+        """
+        Get events from the Chaturbate API.
 
         Args:
             url (str): The URL to fetch events from.
@@ -102,7 +105,8 @@ class ChaturbateAPIPoller:
             await self.process_event(message)
 
     async def process_event(self, message: Dict[str, Any]) -> None:
-        """Process a single event.
+        """
+        Process a single event.
 
         Args:
             message (Dict[str, Any]): The event message to be processed.
@@ -119,7 +123,8 @@ class ChaturbateAPIPoller:
             logger.warning("Unknown method: %s", method)
 
     async def handle_server_error(self, status_code: int) -> None:
-        """Handle server errors.
+        """
+        Handle server errors.
 
         Args:
             status_code (int): The HTTP status code indicating the server error.
