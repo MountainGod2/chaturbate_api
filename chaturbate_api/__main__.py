@@ -5,8 +5,8 @@ import signal
 
 from dotenv import load_dotenv
 
-from chaturbate_api.src.api_poller import ChaturbateAPIPoller
-from chaturbate_api.src.exceptions import BaseURLNotFound
+from chaturbate_api.client import ChaturbateAPIClient
+from chaturbate_api.exceptions import BaseURLNotFound
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -24,7 +24,7 @@ async def main():
         )
 
     # Start the poller
-    poller = ChaturbateAPIPoller(base_url)
+    poller = ChaturbateAPIClient(base_url)
     await poller.run()
 
 

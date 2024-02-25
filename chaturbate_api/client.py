@@ -12,12 +12,12 @@ from .event_handlers import event_handlers
 logger = logging.getLogger(__name__)
 
 
-class ChaturbateAPIPoller:
+class ChaturbateAPIClient:
     """
-    Chaturbate API Poller.
+    Chaturbate API Client.
 
-    This class represents a poller for retrieving events from the Chaturbate API.
-    It provides methods to initialize the poller, start the poller, and handle events.
+    This class represents a client for retrieving events from the Chaturbate API.
+    It provides methods to initialize the client, start the client, and handle events.
 
     Attributes:
         base_url (str): The base URL for the API.
@@ -26,7 +26,7 @@ class ChaturbateAPIPoller:
 
     def __init__(self, base_url: str) -> None:
         """
-        Initialize the poller with the base URL.
+        Initialize the client with the base URL.
 
         Args:
             base_url (str): The base URL for the API.
@@ -38,9 +38,9 @@ class ChaturbateAPIPoller:
 
     async def run(self) -> None:
         """
-        Start the poller.
+        Start the client.
 
-        This method starts the poller and continuously retrieves events from the specified URL.
+        This method starts the client and continuously retrieves events from the specified URL.
 
         Returns:
             None

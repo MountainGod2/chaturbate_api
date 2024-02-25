@@ -3,13 +3,13 @@ from unittest.mock import MagicMock, patch
 import asynctest
 from aiohttp import ClientResponse
 
-from chaturbate_api.src.api_poller import ChaturbateAPIPoller
+from chaturbate_api.client import ChaturbateAPIClient
 
 
-class TestChaturbateAPIPoller(asynctest.TestCase):
+class TestChaturbateAPIClient(asynctest.TestCase):
     def setUp(self):
         self.base_url = "https://eventsapi.chaturbate.com"
-        self.poller = ChaturbateAPIPoller(self.base_url)
+        self.poller = ChaturbateAPIClient(self.base_url)
 
     @patch("aiohttp.ClientSession.get")
     async def test_get_events(self, mock_get):
@@ -26,7 +26,7 @@ class TestChaturbateAPIPoller(asynctest.TestCase):
         next_url = await self.poller.get_events(self.base_url)
         self.assertEqual(next_url, "https://eventsapi.chaturbate.com/next")
 
-    @patch("chaturbate_api.src.api_poller.event_handlers")
+    @patch("chaturbate_api.client.event_handlers")
     async def test_process_event(self, mock_event_handlers):
         mock_handler = MagicMock()
         mock_handler.handle = asynctest.CoroutineMock()
@@ -36,18 +36,18 @@ class TestChaturbateAPIPoller(asynctest.TestCase):
         mock_handler.handle.assert_called_once()
 
     async def test_process_event_unknown_method(self):
-        with self.assertLogs("chaturbate_api.src.api_poller", level="WARNING") as cm:
+        with self.assertLogs("chaturbate_api.client", level="WARNING") as cm:
             await self.poller.process_event({"method": "unknown_method"})
         self.assertIn(
-            "WARNING:chaturbate_api.src.api_poller:Unknown method: unknown_method",
+            "WARNING:chaturbate_api.client:Unknown method: unknown_method",
             cm.output,
         )
 
     async def test_handle_server_error(self):
-        with self.assertLogs("chaturbate_api.src.api_poller", level="ERROR") as cm:
+        with self.assertLogs("chaturbate_api.client", level="ERROR") as cm:
             await self.poller.handle_server_error(500)
         self.assertIn(
-            "ERROR:chaturbate_api.src.api_poller:Server error: 500, retrying in 5 seconds",
+            "ERROR:chaturbate_api.client:Server error: 500, retrying in 5 seconds",
             cm.output,
         )
 
