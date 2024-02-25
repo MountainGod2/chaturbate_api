@@ -1,6 +1,6 @@
-"""Module containing Chaturbate API poller."""
 import asyncio
 import json
+import logging
 from typing import Any, Dict
 
 import aiohttp
@@ -8,6 +8,8 @@ from aiolimiter import AsyncLimiter
 
 from .constants import API_REQUEST_LIMIT, API_REQUEST_PERIOD
 from .event_handlers import event_handlers
+
+logger = logging.getLogger(__name__)
 
 
 class ChaturbateAPIPoller:
@@ -35,7 +37,7 @@ class ChaturbateAPIPoller:
                             await self.process_events(json_response)
                             url = json_response.get("nextUrl")
                         except json.JSONDecodeError as e:
-                            print(f"Error decoding JSON response: {e}")
+                            logger.error(f"Error decoding JSON response: {e}")
                     elif response.status == 404:
                         url = None
                     elif response.status >= 500:
@@ -43,7 +45,7 @@ class ChaturbateAPIPoller:
                     else:
                         raise ValueError(f"Error: {response.status}")
             except aiohttp.ClientError as e:
-                raise ValueError(f"Error: {e}") from e
+                logger.error(f"Error: {e}")
 
         return url
 
@@ -59,9 +61,9 @@ class ChaturbateAPIPoller:
         if handler_class:
             await handler_class().handle(message)
         else:
-            print("Unknown method:", method)
+            logger.warning("Unknown method: %s", method)
 
     async def handle_server_error(self, status_code: int) -> None:
         """Handle server errors."""
-        print(f"Server error: {status_code}, retrying in 5 seconds")
+        logger.error(f"Server error: {status_code}, retrying in 5 seconds")
         await asyncio.sleep(5)
