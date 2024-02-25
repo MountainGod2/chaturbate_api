@@ -27,6 +27,11 @@ class ChaturbateAPIPoller:
 
     async def get_events(self, url: str) -> str:
         """Get events from the Chaturbate API."""
+        if not url.startswith("https://events.testbed.cb.dev") and not url.startswith(
+            "https://eventsapi.chaturbate.com"
+        ):
+            raise ValueError("Invalid URL format")
+
         limiter = AsyncLimiter(API_REQUEST_LIMIT, API_REQUEST_PERIOD)
         async with limiter, aiohttp.ClientSession() as session:
             try:
@@ -46,6 +51,8 @@ class ChaturbateAPIPoller:
                         raise ValueError(f"Error: {response.status}")
             except aiohttp.ClientError as e:
                 logger.error(f"Error: {e}")
+            except Exception:
+                logger.exception("An unexpected error occurred")
 
         return url
 

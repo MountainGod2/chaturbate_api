@@ -8,20 +8,23 @@ from chaturbate_api.src.api_poller import ChaturbateAPIPoller
 
 class TestChaturbateAPIPoller(asynctest.TestCase):
     def setUp(self):
-        self.base_url = "http://test.com"
+        self.base_url = "https://eventsapi.chaturbate.com"
         self.poller = ChaturbateAPIPoller(self.base_url)
 
     @patch("aiohttp.ClientSession.get")
     async def test_get_events(self, mock_get):
-        mock_resp = asynctest.MagicMock(spec=ClientResponse)
+        mock_resp = MagicMock(spec=ClientResponse)
         mock_resp.status = 200
         mock_resp.json = asynctest.CoroutineMock(
-            return_value={"nextUrl": "http://test.com/next", "events": []}
+            return_value={
+                "nextUrl": "https://eventsapi.chaturbate.com/next",
+                "events": [],
+            }
         )
         mock_get.return_value.__aenter__.return_value = mock_resp
 
         next_url = await self.poller.get_events(self.base_url)
-        self.assertEqual(next_url, "http://test.com/next")
+        self.assertEqual(next_url, "https://eventsapi.chaturbate.com/next")
 
     @patch("chaturbate_api.src.api_poller.event_handlers")
     async def test_process_event(self, mock_event_handlers):
