@@ -7,7 +7,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="chaturbate_api",
-    version="0.1.0",
+    version="0.1.1",
     packages=find_packages(),
     install_requires=[
         "aiohttp",
@@ -26,7 +26,7 @@ setup(
     description="Chaturbate API integration",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/MountainGod2/chaturbate-api",
+    url="https://github.com/MountainGod2/chaturbate_api",
     license="MIT",
     classifiers=[
         "Programming Language :: Python :: 3",
