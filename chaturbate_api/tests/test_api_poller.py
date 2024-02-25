@@ -35,12 +35,18 @@ class TestChaturbateAPIPoller(asynctest.TestCase):
     async def test_process_event_unknown_method(self):
         with self.assertLogs("chaturbate_api.src.api_poller", level="WARNING") as cm:
             await self.poller.process_event({"method": "unknown_method"})
-        self.assertIn("Unknown method: unknown_method", cm.output)
+        self.assertIn(
+            "WARNING:chaturbate_api.src.api_poller:Unknown method: unknown_method",
+            cm.output,
+        )
 
     async def test_handle_server_error(self):
         with self.assertLogs("chaturbate_api.src.api_poller", level="ERROR") as cm:
             await self.poller.handle_server_error(500)
-        self.assertIn("Server error: 500, retrying in 5 seconds", cm.output)
+        self.assertIn(
+            "ERROR:chaturbate_api.src.api_poller:Server error: 500, retrying in 5 seconds",
+            cm.output,
+        )
 
 
 if __name__ == "__main__":
