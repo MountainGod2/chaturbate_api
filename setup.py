@@ -15,6 +15,7 @@ setup(
         "python-dotenv",
         "asynctest",
         "pre-commit",
+        "vcrpy",
     ],
     entry_points={
         "console_scripts": [
