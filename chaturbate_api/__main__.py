@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 from chaturbate_api.client import ChaturbateAPIClient
 from chaturbate_api.exceptions import BaseURLNotFound
 
+# Configure logger
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -17,13 +18,11 @@ async def main():
     load_dotenv()
     base_url = os.getenv("EVENTS_API_URL")
 
-    # Check if the base URL is set and raise exception if not
     if base_url is None:
         raise BaseURLNotFound(
             "Base URL not found. Set the EVENTS_API_URL environment variable and try again."
         )
 
-    # Start the poller
     poller = ChaturbateAPIClient(base_url)
     await poller.run()
 
@@ -41,17 +40,14 @@ async def shutdown(signal, loop):
 
 if __name__ == "__main__":
     try:
-        # Set up event loop
         logger.info("Starting Chaturbate API Poller...")
         loop = asyncio.get_event_loop()
 
-        # Register signal handlers
         for sig in (signal.SIGINT, signal.SIGTERM):
             loop.add_signal_handler(
                 sig, lambda sig=sig: asyncio.create_task(shutdown(sig, loop))
             )
 
-        # Run the main coroutine
         loop.run_until_complete(main())
     except (KeyboardInterrupt, asyncio.CancelledError):
         logger.info("Received exit signal, exiting...")
