@@ -80,6 +80,7 @@ class ChaturbateAPIClient:
                                 url = json_response.get("nextUrl")
                             except json.JSONDecodeError as e:
                                 logger.error(f"Error decoding JSON response: {e}")
+                                raise e
                         elif response.status == 404:
                             url = None
                         elif response.status >= 500:
