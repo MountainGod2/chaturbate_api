@@ -91,17 +91,21 @@ class TestChaturbateAPIClient(unittest.TestCase):
         self.loop.run_until_complete(test())
 
     @vcr.use_cassette("fixtures/chaturbate_api_events.yaml")
-    def test_handle_server_error(self):
-        client = ChaturbateAPIClient(self.base_url)
-        status_code = 503
+    def test_get_events_with_max_retry_reached(self):
+        # Mocking the client session to always return a server error
+        mock_get = MagicMock(side_effect=aiohttp.ClientError())
 
-        async def test():
-            with patch.object(asyncio, "sleep") as mock_sleep:
-                await client.handle_server_error(status_code)
+        # Mocking asyncio.sleep to avoid waiting during retries
+        with patch("asyncio.sleep"):
+            with patch("aiohttp.ClientSession.get", mock_get):
+                client = ChaturbateAPIClient(self.base_url)
 
-            mock_sleep.assert_called_once_with(5)
+                # We expect the method to raise an exception after reaching the maximum retry count
+                with self.assertRaises(aiohttp.ClientError):
+                    self.loop.run_until_complete(client.get_events(self.base_url))
 
-        self.loop.run_until_complete(test())
+            # Check that the request was retried 5 times (max retry count)
+            self.assertEqual(mock_get.call_count, 5)
 
     @patch("aiohttp.ClientSession.get")
     def test_get_events_handles_server_error(self, mock_get):
@@ -118,13 +122,6 @@ class TestChaturbateAPIClient(unittest.TestCase):
             "Error decoding JSON", "{}", 0
         )
         mock_get.return_value.__aenter__.return_value = mock_response
-
-        client = ChaturbateAPIClient(self.base_url)
-        self.loop.run_until_complete(client.get_events(self.base_url))
-
-    @patch("aiohttp.ClientSession.get")
-    def test_get_events_handles_client_error(self, mock_get):
-        mock_get.side_effect = aiohttp.ClientError()
 
         client = ChaturbateAPIClient(self.base_url)
         self.loop.run_until_complete(client.get_events(self.base_url))

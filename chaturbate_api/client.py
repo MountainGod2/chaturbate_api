@@ -68,26 +68,33 @@ class ChaturbateAPIClient:
             raise ValueError("Invalid URL format")
 
         limiter = AsyncLimiter(API_REQUEST_LIMIT, API_REQUEST_PERIOD)
-        async with limiter, aiohttp.ClientSession() as session:
+        retry_count = 5
+        while retry_count > 0:
             try:
-                async with session.get(url) as response:
-                    if response.status == 200:
-                        try:
-                            json_response = await response.json()
-                            await self.process_events(json_response)
-                            url = json_response.get("nextUrl")
-                        except json.JSONDecodeError as e:
-                            logger.error(f"Error decoding JSON response: {e}")
-                    elif response.status == 404:
-                        url = None
-                    elif response.status >= 500:
-                        await self.handle_server_error(response.status)
-                    else:
-                        raise ValueError(f"Error: {response.status}")
+                async with limiter, aiohttp.ClientSession() as session:
+                    async with session.get(url) as response:
+                        if response.status == 200:
+                            try:
+                                json_response = await response.json()
+                                await self.process_events(json_response)
+                                url = json_response.get("nextUrl")
+                            except json.JSONDecodeError as e:
+                                logger.error(f"Error decoding JSON response: {e}")
+                        elif response.status == 404:
+                            url = None
+                        elif response.status >= 500:
+                            await self.handle_server_error(response.status)
+                        else:
+                            raise ValueError(f"Error: {response.status}")
+                break
             except aiohttp.ClientError as e:
                 logger.error(f"Error: {e}")
-            except Exception:
-                logger.exception("An unexpected error occurred")
+                retry_count -= 1
+                if retry_count == 0:
+                    logger.error("Max retry attempts reached. Exiting.")
+                    raise
+                logger.info(f"Retrying request. Attempts left: {retry_count}")
+                await asyncio.sleep(5)
 
         return url
 
