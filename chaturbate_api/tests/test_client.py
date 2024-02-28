@@ -1,8 +1,10 @@
 import asyncio
+import json
 import logging
 import unittest
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
+import aiohttp
 import vcr
 
 from chaturbate_api.client import ChaturbateAPIClient
@@ -12,33 +14,49 @@ class TestChaturbateAPIClient(unittest.TestCase):
     def setUp(self):
         self.base_url = "https://events.testbed.cb.dev/events/user_name/api_key"
         logging.basicConfig(level=logging.DEBUG)
+        self.loop = asyncio.new_event_loop()
+
+    def tearDown(self):
+        self.loop.close()
+
+    @vcr.use_cassette("fixtures/chaturbate_api_events.yaml")
+    def test_run_success(self):
+        client = ChaturbateAPIClient(self.base_url)
+        self.loop.run_until_complete(client.run())
+
+    @vcr.use_cassette("fixtures/chaturbate_api_events.yaml")
+    def test_run_invalid_url(self):
+        invalid_base_url = "https://invalid_url.com"
+        client = ChaturbateAPIClient(invalid_base_url)
+
+        async def test():
+            with self.assertRaises(ValueError):
+                await client.run()
+
+        self.loop.run_until_complete(asyncio.wait_for(test(), timeout=2))
 
     @vcr.use_cassette("fixtures/chaturbate_api_events.yaml")
     def test_get_events_success(self):
-        # Given
         client = ChaturbateAPIClient(self.base_url)
-        loop = asyncio.get_event_loop()
 
-        # When
-        try:
-            loop.run_until_complete(asyncio.wait_for(client.run(), timeout=2))
-        except asyncio.TimeoutError:
-            self.fail("Timeout occurred while running the test")
+        async def test():
+            await client.get_events(self.base_url)
+
+        self.loop.run_until_complete(asyncio.wait_for(test(), timeout=2))
 
     @vcr.use_cassette("fixtures/chaturbate_api_events.yaml")
     def test_get_events_invalid_url(self):
-        # Given
         invalid_base_url = "https://invalid_url.com"
         client = ChaturbateAPIClient(invalid_base_url)
-        loop = asyncio.get_event_loop()
 
-        # When
-        with self.assertRaises(ValueError):
-            loop.run_until_complete(asyncio.wait_for(client.run(), timeout=2))
+        async def test():
+            with self.assertRaises(ValueError):
+                await client.get_events(invalid_base_url)
+
+        self.loop.run_until_complete(asyncio.wait_for(test(), timeout=2))
 
     @vcr.use_cassette("fixtures/chaturbate_api_events.yaml")
     def test_process_events(self):
-        # Given
         client = ChaturbateAPIClient(self.base_url)
         events = {
             "events": [
@@ -52,42 +70,64 @@ class TestChaturbateAPIClient(unittest.TestCase):
             ],
             "nextUrl": None,
         }
-        loop = asyncio.get_event_loop()
 
-        # When
-        loop.run_until_complete(client.process_events(events))
+        async def test():
+            await client.process_events(events)
 
-        # Then: Ensure events are processed correctly
+        self.loop.run_until_complete(test())
 
     @vcr.use_cassette("fixtures/chaturbate_api_events.yaml")
     def test_process_event_unknown_method(self):
-        # Given
         client = ChaturbateAPIClient(self.base_url)
         unknown_method_event = {
             "method": "unknownMethod",
             "object": {"user": {"username": "test_user"}},
         }
-        loop = asyncio.get_event_loop()
 
-        # When
-        with self.assertLogs(level=logging.WARNING):
-            loop.run_until_complete(client.process_event(unknown_method_event))
+        async def test():
+            with self.assertLogs(level=logging.WARNING):
+                await client.process_event(unknown_method_event)
 
-        # Then: Ensure a warning log is generated for unknown method
+        self.loop.run_until_complete(test())
 
     @vcr.use_cassette("fixtures/chaturbate_api_events.yaml")
     def test_handle_server_error(self):
-        # Given
         client = ChaturbateAPIClient(self.base_url)
         status_code = 503
-        loop = asyncio.get_event_loop()
 
-        # When
-        with patch.object(asyncio, "sleep") as mock_sleep:
-            loop.run_until_complete(client.handle_server_error(status_code))
+        async def test():
+            with patch.object(asyncio, "sleep") as mock_sleep:
+                await client.handle_server_error(status_code)
 
-        # Then
-        mock_sleep.assert_called_once_with(5)
+            mock_sleep.assert_called_once_with(5)
+
+        self.loop.run_until_complete(test())
+
+    @patch("aiohttp.ClientSession.get")
+    def test_get_events_handles_server_error(self, mock_get):
+        mock_response = MagicMock(status=500)
+        mock_get.return_value.__aenter__.return_value = mock_response
+
+        client = ChaturbateAPIClient(self.base_url)
+        self.loop.run_until_complete(client.get_events(self.base_url))
+
+    @patch("aiohttp.ClientSession.get")
+    def test_get_events_handles_json_decode_error(self, mock_get):
+        mock_response = MagicMock(status=200)
+        mock_response.json.side_effect = json.JSONDecodeError(
+            "Error decoding JSON", "{}", 0
+        )
+        mock_get.return_value.__aenter__.return_value = mock_response
+
+        client = ChaturbateAPIClient(self.base_url)
+        self.loop.run_until_complete(client.get_events(self.base_url))
+
+    @patch("aiohttp.ClientSession.get")
+    def test_get_events_handles_client_error(self, mock_get):
+        mock_get.side_effect = aiohttp.ClientError()
+
+        client = ChaturbateAPIClient(self.base_url)
+        self.loop.run_until_complete(client.get_events(self.base_url))
 
 
 if __name__ == "__main__":
