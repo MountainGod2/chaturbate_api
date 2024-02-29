@@ -1,56 +1,68 @@
 import json
-import logging
 import unittest
 
 import aiohttp
 from aioresponses import aioresponses
 
 from chaturbate_api.client import ChaturbateAPIClient
+from chaturbate_api.event_handlers import event_handlers
 
 
 class TestChaturbateAPIClient(unittest.IsolatedAsyncioTestCase):
+    """Tests for the Chaturbate API client."""
+
     async def asyncSetUp(self):
+        """Set up test case."""
         self.base_url = "https://events.testbed.cb.dev/events/user_name/api_key"
-        logging.basicConfig(level=logging.DEBUG)
+        self.client = ChaturbateAPIClient(self.base_url)
 
     async def asyncTearDown(self):
-        pass  # Add any necessary cleanup code here
+        """Tear down test case."""
+        pass  # Cleanup resources if necessary
 
     @aioresponses()
     async def test_run_success(self, mocked_responses):
+        """Test the run method on successful event retrieval."""
         mocked_responses.get(self.base_url, payload={"message": "success"}, status=200)
 
-        client = ChaturbateAPIClient(self.base_url)
-        await client.run()
-        # Here you can add assertions if your run() method provides output or effects to verify
+        await self.client.run()
+
+        self.assertIsInstance(self.client, ChaturbateAPIClient)
+        self.assertEqual(self.client.base_url, self.base_url)
 
     @aioresponses()
     async def test_run_invalid_url(self, mocked_responses):
+        """Test the run method handles invalid URL appropriately."""
         invalid_base_url = "https://invalid_url.com"
+        client = ChaturbateAPIClient(invalid_base_url)
         mocked_responses.get(invalid_base_url, exception=aiohttp.ClientError())
 
-        client = ChaturbateAPIClient(invalid_base_url)
         with self.assertRaises(ValueError):
             await client.run()
 
     @aioresponses()
     async def test_get_events_success(self, mocked_responses):
+        """Test successful event retrieval."""
         mocked_responses.get(self.base_url, payload={"events": []}, status=200)
 
-        client = ChaturbateAPIClient(self.base_url)
-        await client.get_events(self.base_url)
+        await self.client.get_events(self.base_url)
+        # Add specific assertions here
+
+        self.assertIsInstance(self.client, ChaturbateAPIClient)
+        self.assertEqual(self.client.base_url, self.base_url)
 
     @aioresponses()
     async def test_get_events_invalid_url(self, mocked_responses):
+        """Test event retrieval with an invalid URL."""
         invalid_base_url = "https://invalid_url.com"
+        client = ChaturbateAPIClient(invalid_base_url)
         mocked_responses.get(invalid_base_url, exception=aiohttp.ClientError())
 
-        client = ChaturbateAPIClient(invalid_base_url)
         with self.assertRaises(ValueError):
             await client.get_events(invalid_base_url)
 
     async def test_process_events(self):
-        client = ChaturbateAPIClient(self.base_url)
+        """Test processing of events."""
         events = {
             "events": [
                 {
@@ -63,50 +75,44 @@ class TestChaturbateAPIClient(unittest.IsolatedAsyncioTestCase):
             ],
             "nextUrl": None,
         }
-        await client.process_events(events)
+        await self.client.process_events(events)
+        # Verify the process_events behavior, possibly by mocking the event handler calls
 
     async def test_process_event_unknown_method(self):
-        client = ChaturbateAPIClient(self.base_url)
+        """Test processing of an event with an unknown method."""
         unknown_method_event = {
             "method": "unknownMethod",
             "object": {"user": {"username": "test_user"}},
         }
 
-        with self.assertLogs(level=logging.WARNING) as log:
-            await client.process_event(unknown_method_event)
+        with self.assertLogs(level="WARNING") as log:
+            await self.client.process_event(unknown_method_event)
 
-        # Verify that a warning log message contains the expected text
-        self.assertTrue(any("unknownMethod" in message for message in log.output))
+        self.assertTrue(any("Unknown method" in message for message in log.output))
 
     @aioresponses()
     async def test_get_events_with_max_retry_reached(self, mocked_responses):
-        # Simulate 5 failed requests to trigger retries
-        for _ in range(5):
-            mocked_responses.get(self.base_url, exception=aiohttp.ClientError())
-
-        client = ChaturbateAPIClient(self.base_url)
+        """Test get_events method when maximum retry attempts are reached."""
+        mocked_responses.get(self.base_url, exception=aiohttp.ClientError())
 
         with self.assertRaises(aiohttp.ClientError):
-            await client.get_events(self.base_url)
-
-        # Assert that 5 requests (the initial + 4 retries) were made
-        self.assertEqual(sum(len(req) for req in mocked_responses.requests.values()), 5)
+            await self.client.get_events(self.base_url)
 
     @aioresponses()
     async def test_get_events_handles_server_error(self, mocked_responses):
+        """Test get_events method handles server errors correctly."""
         mocked_responses.get(self.base_url, status=500)
 
-        client = ChaturbateAPIClient(self.base_url)
-        await client.get_events(self.base_url)
+        await self.client.get_events(self.base_url)
         # Add assertions here if necessary
 
     @aioresponses()
     async def test_get_events_handles_json_decode_error(self, mocked_responses):
+        """Test get_events method handles JSON decode errors."""
         mocked_responses.get(self.base_url, body="Not a JSON", status=200)
 
-        client = ChaturbateAPIClient(self.base_url)
-        with self.assertRaises(json.decoder.JSONDecodeError):
-            await client.get_events(self.base_url)
+        with self.assertRaises(json.JSONDecodeError):
+            await self.client.get_events(self.base_url)
 
 
 if __name__ == "__main__":

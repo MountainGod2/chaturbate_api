@@ -93,7 +93,7 @@ class ChaturbateAPIClient:
                 retry_count -= 1
                 if retry_count == 0:
                     logger.error("Max retry attempts reached. Exiting.")
-                    raise
+                    raise e
                 logger.info(f"Retrying request. Attempts left: {retry_count}")
                 await asyncio.sleep(5)
 
