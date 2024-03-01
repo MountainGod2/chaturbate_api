@@ -1,20 +1,16 @@
-"""Module containing event handlers for Chaturbate API."""
+"""This module contains event handlers"""
 
-from .handlers.broadcast_handlers import (
+from .handlers import (
     BroadcastStartEventHandler,
     BroadcastStopEventHandler,
-)
-from .handlers.chat_handlers import ChatMessageEventHandler
-from .handlers.follow_handlers import (
-    FollowEventHandler,
-    UnfollowEventHandler,
-)
-from .handlers.media_handlers import MediaPurchaseEventHandler
-from .handlers.message_handlers import PrivateMessageEventHandler
-from .handlers.room_handlers import RoomSubjectChangeEventHandler
-from .handlers.tip_handlers import TipEventHandler
-from .handlers.user_handlers import (
+    ChatMessageEventHandler,
     FanclubJoinEventHandler,
+    FollowEventHandler,
+    MediaPurchaseEventHandler,
+    PrivateMessageEventHandler,
+    RoomSubjectChangeEventHandler,
+    TipEventHandler,
+    UnfollowEventHandler,
     UserEnterEventHandler,
     UserLeaveEventHandler,
 )
