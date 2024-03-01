@@ -1,7 +1,6 @@
-import asyncio
 import json
 import logging
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 import aiohttp
 from aiolimiter import AsyncLimiter
@@ -49,7 +48,7 @@ class ChaturbateAPIClient:
         while url:
             url = await self.get_events(url)
 
-    async def get_events(self, url: str) -> str:
+    async def get_events(self, url: str) -> List[Dict[str, Any]]:
         """
         Get events from the Chaturbate API.
 
@@ -57,47 +56,36 @@ class ChaturbateAPIClient:
             url (str): The URL to fetch events from.
 
         Returns:
-            str: The next URL to fetch events from.
+            List[Dict[str, Any]]: List of event dictionaries.
 
         Raises:
             ValueError: If the URL format is invalid.
+            aiohttp.ClientError: If there is an error with the HTTP request.
         """
         if not url.startswith("https://events.testbed.cb.dev") and not url.startswith(
             "https://eventsapi.chaturbate.com"
         ):
             raise ValueError("Invalid URL format")
-
         limiter = AsyncLimiter(API_REQUEST_LIMIT, API_REQUEST_PERIOD)
-        retry_count = 5
-        while retry_count > 0:
-            try:
-                async with limiter, aiohttp.ClientSession() as session:
-                    async with session.get(url) as response:
-                        if response.status == 200:
-                            try:
-                                json_response = await response.json()
-                                await self.process_events(json_response)
-                                url = json_response.get("nextUrl")
-                            except json.JSONDecodeError as e:
-                                logger.error(f"Error decoding JSON response: {e}")
-                                raise e
-                        elif response.status == 404:
-                            url = None
-                        elif response.status >= 500:
-                            await self.handle_server_error(response.status)
-                        else:
-                            raise ValueError(f"Error: {response.status}")
-                break
-            except aiohttp.ClientError as e:
-                logger.error(f"Error: {e}")
-                retry_count -= 1
-                if retry_count == 0:
-                    logger.error("Max retry attempts reached. Exiting.")
-                    raise e
-                logger.info(f"Retrying request. Attempts left: {retry_count}")
-                await asyncio.sleep(5)
-
-        return url
+        try:
+            async with limiter, aiohttp.ClientSession() as session:
+                async with session.get(url) as response:
+                    if response.status == 200:
+                        json_response = await response.json()
+                        events = json_response.get("events", [])
+                        return events
+                    elif response.status == 404:
+                        return []
+                    elif response.status >= 500:
+                        raise aiohttp.ClientResponseError(
+                            request_info=response.request_info,
+                            history=response.history,
+                            status=response.status,
+                        )
+                    else:
+                        raise ValueError(f"Error: {response.status}")
+        except aiohttp.ClientError as e:
+            raise e
 
     async def process_events(self, json_response: Dict[str, Any]) -> None:
         """
@@ -126,20 +114,7 @@ class ChaturbateAPIClient:
         method = message.get("method")
         handler_class = event_handlers.get(method)
         if handler_class:
-            await handler_class().handle(message)
+            event_data = await handler_class().handle(message)
+            print(json.dumps(event_data))
         else:
             logger.warning("Unknown method: %s", method)
-
-    async def handle_server_error(self, status_code: int) -> None:
-        """
-        Handle server errors.
-
-        Args:
-            status_code (int): The HTTP status code indicating the server error.
-
-        Returns:
-            None
-
-        """
-        logger.error(f"Server error: {status_code}, retrying in 5 seconds")
-        await asyncio.sleep(5)
