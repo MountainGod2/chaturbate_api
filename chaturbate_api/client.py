@@ -1,4 +1,5 @@
-import json
+"""Module for the Chaturbate API client."""
+
 import logging
 from typing import Any, Dict, List
 
@@ -20,7 +21,6 @@ class ChaturbateAPIClient:
 
     Attributes:
         base_url (str): The base URL for the API.
-
     """
 
     def __init__(self, base_url: str) -> None:
@@ -37,18 +37,17 @@ class ChaturbateAPIClient:
 
     async def run(self) -> None:
         """
-        Start the client.
-
-        This method starts the client and continuously retrieves events from the specified URL.
-
-        Returns:
-            None
+        Start the client and continuously retrieve events from the API.
         """
         url = self.base_url
         while url:
-            url = await self.get_events(url)
+            events, next_url = await self.get_events(
+                url
+            )  # Adjust get_events to return next_url
+            await self.process_events(events)
+            url = next_url  # Update the URL for the next iteration
 
-    async def get_events(self, url: str) -> List[Dict[str, Any]]:
+    async def get_events(self, url: str) -> (List[Dict[str, Any]], str):
         """
         Get events from the Chaturbate API.
 
@@ -67,54 +66,55 @@ class ChaturbateAPIClient:
         ):
             raise ValueError("Invalid URL format")
         limiter = AsyncLimiter(API_REQUEST_LIMIT, API_REQUEST_PERIOD)
-        try:
-            async with limiter, aiohttp.ClientSession() as session:
-                async with session.get(url) as response:
-                    if response.status == 200:
-                        json_response = await response.json()
-                        events = json_response.get("events", [])
-                        return events
-                    elif response.status == 404:
-                        return []
-                    elif response.status >= 500:
-                        raise aiohttp.ClientResponseError(
-                            request_info=response.request_info,
-                            history=response.history,
-                            status=response.status,
-                        )
-                    else:
-                        raise ValueError(f"Error: {response.status}")
-        except aiohttp.ClientError as e:
-            raise e
+        async with limiter, aiohttp.ClientSession() as session:
+            async with session.get(url) as response:
+                if response.status == 200:
+                    json_response = await response.json()
+                    events = json_response.get("events", [])
+                    next_url = json_response.get(
+                        "nextUrl"
+                    )  # Hypothetical field containing the next URL
+                    return events, next_url
+                elif response.status == 404:
+                    return []
+                elif response.status >= 500:
+                    raise aiohttp.ClientResponseError(
+                        request_info=response.request_info,
+                        history=response.history,
+                        status=response.status,
+                    )
+                else:
+                    raise ValueError(f"Error: {response.status}")
+        return [], None  # Return an empty list and None if no more events or on error
 
-    async def process_events(self, json_response: Dict[str, Any]) -> None:
+    async def process_events(self, events: List[Dict[str, Any]]) -> None:
         """
         Process events from the Chaturbate API.
 
         Args:
-            json_response (Dict[str, Any]): The JSON response containing the events.
+            events (List[Dict[str, Any]]): List of events to process.
 
         Returns:
             None
         """
-        for message in json_response.get("events", []):
-            await self.process_event(message)
+        for event in events:
+            await self.process_event(event)
 
-    async def process_event(self, message: Dict[str, Any]) -> None:
+    async def process_event(self, event: Dict[str, Any]) -> None:
         """
         Process a single event.
 
         Args:
-            message (Dict[str, Any]): The event message to be processed.
+            event (Dict[str, Any]): The event to process.
 
         Returns:
             None
-
         """
-        method = message.get("method")
+        method = event.get("method")
         handler_class = event_handlers.get(method)
+        logger.debug(f"Processing event: {event}")
         if handler_class:
-            event_data = await handler_class().handle(message)
-            print(json.dumps(event_data))
+            handler = handler_class()
+            await handler.handle(event)
         else:
-            logger.warning("Unknown method: %s", method)
+            logger.warning(f"Unknown method: {method}")

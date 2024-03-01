@@ -8,15 +8,17 @@ from dotenv import load_dotenv
 from chaturbate_api.client import ChaturbateAPIClient
 from chaturbate_api.exceptions import BaseURLNotFound
 
-# Configure logger
-logging.basicConfig(level=logging.INFO)
+# Configure logger to debug level to get detailed logs
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
 async def main():
     """Main entry point of the application."""
     load_dotenv()
+    logger.debug("Environment variables loaded.")
     base_url = os.getenv("EVENTS_API_URL")
+    logger.debug(f"Base URL: {base_url}")
 
     if base_url is None:
         raise BaseURLNotFound(
@@ -51,7 +53,9 @@ if __name__ == "__main__":
         loop.run_until_complete(main())
     except (KeyboardInterrupt, asyncio.CancelledError):
         logger.info("Received exit signal, exiting...")
+    except BaseURLNotFound as e:
+        logger.error(f"Configuration error: {e}")
     except Exception as e:
-        logger.error(f"An error occurred: {e}")
+        logger.error(f"An unexpected error occurred: {e}", exc_info=True)
     finally:
         logger.info("Exiting...")
