@@ -1,4 +1,4 @@
-"""This module contains follow event handlers."""
+"""Follow event handlers."""
 
 import logging
 
@@ -7,10 +7,10 @@ class FollowEventHandler:
     """Handle follow event."""
 
     @staticmethod
-    async def handle(message) -> dict:
+    async def handle(message: dict) -> dict:
         """Handle follow event."""
         username = message["object"]["user"]["username"]
-        logging.info(f"{username} has followed")
+        logging.info("%s has followed", username)
         return {
             "event": "follow",
             "username": username,
@@ -22,10 +22,10 @@ class UnfollowEventHandler:
     """Handle unfollow event."""
 
     @staticmethod
-    async def handle(message) -> dict:
+    async def handle(message: dict) -> dict:
         """Handle unfollow event."""
         username = message["object"]["user"]["username"]
-        logging.info(f"{username} has unfollowed")
+        logging.info("%s has unfollowed", username)
         return {
             "event": "unfollow",
             "username": username,

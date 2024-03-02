@@ -1,7 +1,11 @@
+"""Setup for the chaturbate_api package."""
+
+from pathlib import Path
+
 from setuptools import find_packages, setup
 
 # Read the contents of your README file
-with open("README.md", encoding="utf-8") as fh:
+with Path.open("README.md", encoding="utf-8") as fh:
     long_description = fh.read()
 
 

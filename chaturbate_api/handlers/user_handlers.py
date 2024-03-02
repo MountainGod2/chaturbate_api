@@ -1,4 +1,4 @@
-"""This module contains user event handlers."""
+"""User event handlers."""
 
 import logging
 
@@ -7,10 +7,10 @@ class UserEnterEventHandler:
     """Handle user enter event."""
 
     @staticmethod
-    async def handle(message) -> dict:
+    async def handle(message: dict) -> dict:
         """Handle user enter event."""
         username = message["object"]["user"]["username"]
-        logging.info(f"{username} entered the room")
+        logging.info("%s entered the room", username)
         return {
             "event": "userEnter",
             "username": username,
@@ -22,10 +22,11 @@ class UserLeaveEventHandler:
     """Handle user leave event."""
 
     @staticmethod
-    async def handle(message) -> dict:
+    async def handle(message: dict) -> dict:
         """Handle user leave event."""
         username = message["object"]["user"]["username"]
-        logging.info(f"{username} left the room")
+        logging.info("%s left the room", username)
+
         return {
             "event": "userLeave",
             "username": username,
@@ -37,10 +38,10 @@ class FanclubJoinEventHandler:
     """Handle fanclub join event."""
 
     @staticmethod
-    async def handle(message) -> dict:
+    async def handle(message: dict) -> dict:
         """Handle fanclub join event."""
         username = message["object"]["user"]["username"]
-        logging.info(f"{username} joined the fanclub")
+        logging.info("%s joined the fanclub", username)
         return {
             "event": "fanclubJoin",
             "username": username,

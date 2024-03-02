@@ -1,4 +1,4 @@
-"""This module contains the handler for chat message event."""
+"""Handler for chat message event."""
 
 import logging
 
@@ -7,11 +7,11 @@ class ChatMessageEventHandler:
     """Handle chat message event."""
 
     @staticmethod
-    async def handle(message) -> dict:
+    async def handle(message: dict) -> dict:
         """Handle chat message event."""
         username = message["object"]["user"]["username"]
         chat_message = message["object"]["message"]["message"]
-        logging.info(f"Chat message from {username}: {chat_message}")
+        logging.info("Chat message from %s: %s", username, chat_message)
         return {
             "event": "chatMessage",
             "username": username,

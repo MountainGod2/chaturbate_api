@@ -1,4 +1,4 @@
-"""This module contains handlers for broadcast events."""
+"""Handlers for broadcast events."""
 
 import logging
 

@@ -1,4 +1,4 @@
-"""This module contains event handlers."""
+"""Event handlers for Chaturbate API events."""
 
 from .handlers import (
     BroadcastStartEventHandler,

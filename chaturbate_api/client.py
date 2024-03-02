@@ -1,16 +1,25 @@
 """Module for the Chaturbate API client."""
 
-import asyncio
+from __future__ import annotations
+
 import json
 import logging
-from typing import Any, Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING, Any
 
 from aiolimiter import AsyncLimiter
 
-from chaturbate_api.exceptions import BaseURLNotFound
+from chaturbate_api.exceptions import ChaturbateServerError
 
-from .constants import API_REQUEST_LIMIT, API_REQUEST_PERIOD
-from .event_handlers import event_handlers
+from .constants import (
+    API_REQUEST_LIMIT,
+    API_REQUEST_PERIOD,
+    HTTP_CLIENT_ERROR,
+    HTTP_SERVER_ERROR,
+    HTTP_SUCCESS,
+)
+
+if TYPE_CHECKING:
+    import aiohttp
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +38,12 @@ class ChaturbateAPIClient:
 
     """
 
-    def __init__(self, base_url: str, session, event_handlers) -> None:
+    def __init__(
+        self: ChaturbateAPIClient,
+        base_url: str,
+        session: aiohttp.ClientSession,
+        event_handlers: dict[str, Any],
+    ) -> None:
         """Initialize the Chaturbate API client.
 
         Args:
@@ -44,15 +58,10 @@ class ChaturbateAPIClient:
         self.event_handlers = event_handlers
         self.limiter = AsyncLimiter(API_REQUEST_LIMIT, API_REQUEST_PERIOD)
 
-    async def run(self) -> None:
+    async def run(self: ChaturbateAPIClient) -> None:
         """Start the client and continuously retrieve events from the API."""
-        logger.debug(f"Base URL: {self.base_url}")
+        logger.debug("Base URL: %s", self.base_url)
 
-        if self.base_url is None:
-            msg = "Base URL not found. Set the EVENTS_API_URL environment variable and try again."
-            raise BaseURLNotFound(
-                msg,
-            )
         url = self.base_url
 
         while url:
@@ -62,7 +71,10 @@ class ChaturbateAPIClient:
             await self.process_events(events)
             url = next_url  # Update the URL for the next iteration
 
-    async def get_events(self, url: str) -> Tuple[List[Dict[str, Any]], Optional[str]]:
+    async def get_events(
+        self: ChaturbateAPIClient,
+        url: str,
+    ) -> tuple[list[dict[str, Any]], str | None]:
         """Get events from the Chaturbate API.
 
         Args:
@@ -74,6 +86,12 @@ class ChaturbateAPIClient:
             List[Dict[str, Any]]: List of events.
             str: The next URL to get events from.
 
+        Raises:
+        ------
+            ValueError: If the URL format is invalid.
+            ChaturbateServerError: If the server returns an error.
+            ValueError: If the server returns an unknown error.
+
         """
         if not url.startswith("https://events.testbed.cb.dev") and not url.startswith(
             "https://eventsapi.chaturbate.com",
@@ -82,25 +100,27 @@ class ChaturbateAPIClient:
             raise ValueError(msg)
         async with self.limiter:
             async with self.session.get(url) as response:
-                if response.status == 200:
+                if response.status == HTTP_SUCCESS:
                     json_response = await response.json()
                     events = json_response.get("events", [])
                     next_url = json_response.get("nextUrl")
                     return events, next_url
-                elif response.status == 404:
+                if response.status >= HTTP_SERVER_ERROR:
+                    msg = f"Server error: {response.status}"
+                    raise ChaturbateServerError(msg)
+                if response.status == HTTP_CLIENT_ERROR:
                     return []
-                elif response.status >= 500:
-                    asyncio.sleep(5)
-                    return await self.get_events(url)
-                else:
-                    msg = f"Error: {response.status}"
-                    raise ValueError(msg)
+                msg = f"Error: {response.status}"
+                raise ValueError(msg)
             return (
                 [],
-                None,
+                self.base_url,
             )
 
-    async def process_events(self, events: List[Dict[str, Any]]) -> None:
+    async def process_events(
+        self: ChaturbateAPIClient,
+        events: list[dict[str, Any]],
+    ) -> None:
         """Process events from the Chaturbate API.
 
         Args:
@@ -115,7 +135,7 @@ class ChaturbateAPIClient:
         for event in events:
             await self.process_event(event)
 
-    async def process_event(self, event: Dict[str, Any]) -> None:
+    async def process_event(self: ChaturbateAPIClient, event: dict[str, Any]) -> None:
         """Process a single event.
 
         Args:
@@ -129,12 +149,12 @@ class ChaturbateAPIClient:
         """
         method = event.get("method")
         obj = event.get("object")
-        handler_class = event_handlers.get(method)
+        handler_class = self.event_handlers.get(method)
         formatted_obj = json.dumps(obj, indent=4)
 
-        logger.debug(f"Processing event: {method}\n{formatted_obj}")
+        logger.debug("Method: %s\nObject: %s", method, formatted_obj)
         if handler_class:
             handler = handler_class()
             await handler.handle(event)
         else:
-            logger.warning(f"Unknown method: {method}")
+            logger.warning("Unknown method: %s", method)

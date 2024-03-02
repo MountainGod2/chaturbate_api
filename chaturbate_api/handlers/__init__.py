@@ -1,3 +1,5 @@
+"""Event handlers for the Chaturbate API."""
+
 from .broadcast_handlers import BroadcastStartEventHandler, BroadcastStopEventHandler
 from .chat_handlers import ChatMessageEventHandler
 from .follow_handlers import FollowEventHandler, UnfollowEventHandler
