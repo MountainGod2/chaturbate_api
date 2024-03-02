@@ -1,10 +1,14 @@
 """Module for the Chaturbate API client."""
 
 import logging
+import os
 from typing import Any, Dict, List
 
 import aiohttp
 from aiolimiter import AsyncLimiter
+from dotenv import load_dotenv
+
+from chaturbate_api.exceptions import BaseURLNotFound
 
 from .constants import API_REQUEST_LIMIT, API_REQUEST_PERIOD
 from .event_handlers import event_handlers
@@ -23,7 +27,7 @@ class ChaturbateAPIClient:
         base_url (str): The base URL for the API.
     """
 
-    def __init__(self, base_url: str) -> None:
+    def __init__(self) -> None:
         """
         Initialize the client with the base URL.
 
@@ -33,13 +37,22 @@ class ChaturbateAPIClient:
         Returns:
             None
         """
-        self.base_url = base_url
+        self.base_url = os.getenv("EVENTS_API_URL")
 
     async def run(self) -> None:
         """
         Start the client and continuously retrieve events from the API.
         """
+        load_dotenv()
+        logger.debug("Environment variables loaded.")
+        logger.debug(f"Base URL: {self.base_url}")
+
+        if self.base_url is None:
+            raise BaseURLNotFound(
+                "Base URL not found. Set the EVENTS_API_URL environment variable and try again."
+            )
         url = self.base_url
+
         while url:
             events, next_url = await self.get_events(
                 url

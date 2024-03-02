@@ -1,31 +1,18 @@
 import asyncio
 import logging
-import os
 import signal
-
-from dotenv import load_dotenv
 
 from chaturbate_api.client import ChaturbateAPIClient
 from chaturbate_api.exceptions import BaseURLNotFound
 
 # Configure logger to debug level to get detailed logs
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
 async def main():
     """Main entry point of the application."""
-    load_dotenv()
-    logger.debug("Environment variables loaded.")
-    base_url = os.getenv("EVENTS_API_URL")
-    logger.debug(f"Base URL: {base_url}")
-
-    if base_url is None:
-        raise BaseURLNotFound(
-            "Base URL not found. Set the EVENTS_API_URL environment variable and try again."
-        )
-
-    poller = ChaturbateAPIClient(base_url)
+    poller = ChaturbateAPIClient()
     await poller.run()
 
 
