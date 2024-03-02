@@ -1,48 +1,57 @@
+"""Entry point for the Chaturbate API client."""
+
 import asyncio
 import logging
-import signal
+import sys
+
+import aiohttp
 
 from chaturbate_api.client import ChaturbateAPIClient
+from chaturbate_api.config.config import EVENTS_API_URL
+from chaturbate_api.event_handlers import event_handlers
 from chaturbate_api.exceptions import BaseURLNotFound
 
-# Configure logger to debug level to get detailed logs
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(message)s",
+)
 
 
-async def main():
-    """Main entry point of the application."""
-    poller = ChaturbateAPIClient()
-    await poller.run()
+async def main() -> None:
+    """Run the main coroutine for the Chaturbate API client.
 
+    Raises
+    ------
+        BaseURLNotFound: If BASE_URL is None.
 
-async def shutdown(signal, loop):
-    """Cleanup tasks before shutting down."""
-    logger.info(f"Received exit signal {signal.name}, cleaning up...")
-    tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
-    for task in tasks:
-        task.cancel()
-    logger.info("Cancelled all tasks")
-    await asyncio.gather(*tasks, return_exceptions=True)
-    loop.stop()
+    Returns
+    -------
+        None
+
+    """
+    # Ensure BASE_URL is not None
+    if EVENTS_API_URL is None:
+        raise BaseURLNotFound
+
+    # Initialize aiohttp session
+    async with aiohttp.ClientSession() as session:
+        # Initialize the Chaturbate API client with the base URL,
+        # session, and event handlers
+        client = ChaturbateAPIClient(
+            base_url=EVENTS_API_URL,
+            session=session,
+            event_handlers=event_handlers,
+        )
+
+        try:
+            # Start the client to continuously retrieve and process events
+            await client.run()
+        except Exception:
+            logging.exception("An error occurred")
+            sys.exit(1)
 
 
 if __name__ == "__main__":
-    try:
-        logger.info("Starting Chaturbate API Poller...")
-        loop = asyncio.get_event_loop()
-
-        for sig in (signal.SIGINT, signal.SIGTERM):
-            loop.add_signal_handler(
-                sig, lambda sig=sig: asyncio.create_task(shutdown(sig, loop))
-            )
-
-        loop.run_until_complete(main())
-    except (KeyboardInterrupt, asyncio.CancelledError):
-        logger.info("Received exit signal, exiting...")
-    except BaseURLNotFound as e:
-        logger.error(f"Configuration error: {e}")
-    except Exception as e:
-        logger.error(f"An unexpected error occurred: {e}", exc_info=True)
-    finally:
-        logger.info("Exiting...")
+    # Run the main coroutine
+    asyncio.run(main())

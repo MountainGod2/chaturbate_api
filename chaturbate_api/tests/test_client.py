@@ -47,7 +47,7 @@ class TestChaturbateAPIClient(unittest.IsolatedAsyncioTestCase):
                         "user": {"username": "test_user"},
                         "message": {"message": "hi"},
                     },
-                }
+                },
             ],
             "nextUrl": None,
         }
