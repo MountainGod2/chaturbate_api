@@ -9,7 +9,7 @@ from chaturbate_api.client import ChaturbateAPIClient
 from chaturbate_api.exceptions import BaseURLNotFound
 
 # Configure logger to debug level to get detailed logs
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
