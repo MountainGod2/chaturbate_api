@@ -49,8 +49,9 @@ class ChaturbateAPIClient:
         logger.debug(f"Base URL: {self.base_url}")
 
         if self.base_url is None:
+            msg = "Base URL not found. Set the EVENTS_API_URL environment variable and try again."
             raise BaseURLNotFound(
-                "Base URL not found. Set the EVENTS_API_URL environment variable and try again.",
+                msg,
             )
         url = self.base_url
 
@@ -77,7 +78,8 @@ class ChaturbateAPIClient:
         if not url.startswith("https://events.testbed.cb.dev") and not url.startswith(
             "https://eventsapi.chaturbate.com",
         ):
-            raise ValueError("Invalid URL format")
+            msg = "Invalid URL format"
+            raise ValueError(msg)
         async with self.limiter:
             async with self.session.get(url) as response:
                 if response.status == 200:
@@ -91,7 +93,8 @@ class ChaturbateAPIClient:
                     asyncio.sleep(5)
                     return await self.get_events(url)
                 else:
-                    raise ValueError(f"Error: {response.status}")
+                    msg = f"Error: {response.status}"
+                    raise ValueError(msg)
             return (
                 [],
                 None,

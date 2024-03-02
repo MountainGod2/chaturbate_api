@@ -1,10 +1,10 @@
-"""This module contains handlers for broadcast events"""
+"""This module contains handlers for broadcast events."""
 
 import logging
 
 
 class BroadcastStartEventHandler:
-    """Handle broadcast start event"""
+    """Handle broadcast start event."""
 
     @staticmethod
     async def handle() -> dict:
@@ -14,10 +14,10 @@ class BroadcastStartEventHandler:
 
 
 class BroadcastStopEventHandler:
-    """Handle broadcast stop event"""
+    """Handle broadcast stop event."""
 
     @staticmethod
     async def handle() -> dict:
-        """Handle broadcast stop event"""
+        """Handle broadcast stop event."""
         logging.info("Broadcast stopped")
         return {"event": "broadcastStop", "message": "Broadcast stopped"}

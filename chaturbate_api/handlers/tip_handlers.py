@@ -1,14 +1,14 @@
-"""This module contains the tip event handler"""
+"""This module contains the tip event handler."""
 
 import logging
 
 
 class TipEventHandler:
-    """Handle tip event"""
+    """Handle tip event."""
 
     @staticmethod
     async def handle(message) -> dict:
-        """Handle tip event"""
+        """Handle tip event."""
         username = message["object"]["user"]["username"]
         tokens = message["object"]["tip"]["tokens"]
         is_anonymous = message["object"]["tip"].get("isAnon", False)

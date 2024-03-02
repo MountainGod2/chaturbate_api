@@ -1,4 +1,4 @@
-"""This module contains event handlers"""
+"""This module contains event handlers."""
 
 from .handlers import (
     BroadcastStartEventHandler,

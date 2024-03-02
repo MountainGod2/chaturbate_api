@@ -1,14 +1,14 @@
-"""This module contains message event handlers"""
+"""This module contains message event handlers."""
 
 import logging
 
 
 class PrivateMessageEventHandler:
-    """Handle private message event"""
+    """Handle private message event."""
 
     @staticmethod
     async def handle(message) -> dict:
-        """Handle private message event"""
+        """Handle private message event."""
         from_user = message["object"]["message"]["fromUser"]
         to_user = message["object"]["message"]["toUser"]
         private_message = message["object"]["message"]["message"]
