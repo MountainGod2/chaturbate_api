@@ -95,7 +95,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.9"
 aiohttp = "^3.9.3"
-aiolimiter = "^1.1.0"
+aiolimiter = "^1.1.1"
 aioresponses = "^0.7.6"
 python-dotenv = "^1.0.1"
 
