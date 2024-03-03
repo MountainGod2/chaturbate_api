@@ -41,8 +41,15 @@ This will initiate the polling process, and you'll begin receiving events based 
 
 To contribute to this project or modify it for your needs, clone the repository and run tests to ensure your modifications don't break existing functionality:
 
+
 ```
-pytest
+git clone -r https://github.com/MountainGod2/chaturbate_api.git
+```
+
+```
+pip install pytest
+cd chaturbate_api/
+pytest .
 ```
 
 ### License
