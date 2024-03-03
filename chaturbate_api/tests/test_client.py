@@ -14,11 +14,18 @@ from chaturbate_api.exceptions import ChaturbateServerError
 class TestChaturbateAPIClient(unittest.IsolatedAsyncioTestCase):
     """Tests for the Chaturbate API client."""
 
+    async def asyncSetUp(self: "TestChaturbateAPIClient") -> None:
+        """Set up the test by creating a session."""
+        self.session = aiohttp.ClientSession()
+
+    async def asyncTearDown(self: "TestChaturbateAPIClient") -> None:
+        """Tear down the test by closing the session."""
+        await self.session.close()
+
     async def test_run_success(self: "TestChaturbateAPIClient") -> None:
         """Test the run method on successful event retrieval."""
         base_url = "https://events.testbed.cb.dev/events/user_name/api_key"
-        session = aiohttp.ClientSession()
-        client = ChaturbateAPIClient(base_url, session, event_handlers)
+        client = ChaturbateAPIClient(base_url, self.session, event_handlers)
 
         with aioresponses() as mocked_responses:
             mocked_responses.get(base_url, payload={"message": "success"}, status=200)
@@ -35,8 +42,7 @@ class TestChaturbateAPIClient(unittest.IsolatedAsyncioTestCase):
     async def test_run_invalid_url(self: "TestChaturbateAPIClient") -> None:
         """Test the run method handles invalid URL appropriately."""
         invalid_base_url = "https://invalid_url.com"
-        session = aiohttp.ClientSession()
-        client = ChaturbateAPIClient(invalid_base_url, session, event_handlers)
+        client = ChaturbateAPIClient(invalid_base_url, self.session, event_handlers)
 
         with aioresponses() as mocked_responses:
             mocked_responses.get(invalid_base_url, exception=aiohttp.ClientError())
@@ -53,8 +59,7 @@ class TestChaturbateAPIClient(unittest.IsolatedAsyncioTestCase):
     async def test_get_events_success(self: "TestChaturbateAPIClient") -> None:
         """Test successful event retrieval."""
         base_url = "https://events.testbed.cb.dev/events/user_name/api_key"
-        session = aiohttp.ClientSession()
-        client = ChaturbateAPIClient(base_url, session, event_handlers)
+        client = ChaturbateAPIClient(base_url, self.session, event_handlers)
 
         events_payload = {
             "events": [
@@ -88,8 +93,7 @@ class TestChaturbateAPIClient(unittest.IsolatedAsyncioTestCase):
     async def test_get_events_invalid_url(self: "TestChaturbateAPIClient") -> None:
         """Test event retrieval with an invalid URL."""
         invalid_base_url = "https://invalid_url.com"
-        session = aiohttp.ClientSession()
-        client = ChaturbateAPIClient(invalid_base_url, session, event_handlers)
+        client = ChaturbateAPIClient(invalid_base_url, self.session, event_handlers)
 
         with aioresponses() as mocked_responses:
             mocked_responses.get(invalid_base_url, exception=aiohttp.ClientError())
@@ -111,10 +115,9 @@ class TestChaturbateAPIClient(unittest.IsolatedAsyncioTestCase):
             "method": "unknownMethod",
             "object": {"user": {"username": "test_user"}},
         }
-        session = aiohttp.ClientSession()
         client = ChaturbateAPIClient(
             "https://events.testbed.cb.dev",
-            session,
+            self.session,
             event_handlers,
         )
 
@@ -130,8 +133,7 @@ class TestChaturbateAPIClient(unittest.IsolatedAsyncioTestCase):
     ) -> None:
         """Test get_events method handles server errors correctly."""
         base_url = "https://events.testbed.cb.dev/events/user_name/api_key"
-        session = aiohttp.ClientSession()
-        client = ChaturbateAPIClient(base_url, session, event_handlers)
+        client = ChaturbateAPIClient(base_url, self.session, event_handlers)
 
         with aioresponses() as mocked_responses:
             mocked_responses.get(base_url, status=521)
@@ -148,8 +150,7 @@ class TestChaturbateAPIClient(unittest.IsolatedAsyncioTestCase):
     ) -> None:
         """Test get_events method handles JSON decode errors."""
         base_url = "https://events.testbed.cb.dev/events/user_name/api_key"
-        session = aiohttp.ClientSession()
-        client = ChaturbateAPIClient(base_url, session, event_handlers)
+        client = ChaturbateAPIClient(base_url, self.session, event_handlers)
 
         with aioresponses() as mocked_responses:
             mocked_responses.get(base_url, body="Not a JSON", status=200)
