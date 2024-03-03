@@ -83,32 +83,27 @@ docstring-code-line-length = "dynamic"
 ###########################
 ##### Poetry Settings #####
 ###########################
-[build-system]
-requires = ["setuptools>=42", "wheel"]
-build-backend = "setuptools.build_meta"
 
 [tool.poetry]
-name = "chaturbate_api"
-version = "0.1.2"
+name = "chaturbate-api"
+version = "0.1.0"
 description = "Chaturbate API integration"
 authors = ["MountainGod2 <admin@reid.ca>"]
 license = "MIT"
-homepage = "https://github.com/MountainGod2/chaturbate_api"
-repository = "https://github.com/MountainGod2/chaturbate_api"
+readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.9"
 aiohttp = "^3.9.3"
 aiolimiter = "^1.1.0"
 aioresponses = "^0.7.6"
 python-dotenv = "^1.0.1"
 
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0.2"
+aiohttp = "^3.9.3"
+aioresponses = "^0.7.6"
 
-[tool.poetry.dev-dependencies]
-
-[tool.poetry.scripts]
-chaturbate-api = "chaturbate_api.__main__:main"
-
-[tool.poetry.extras]
-
-[tool.poetry.publish]
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

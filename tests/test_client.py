@@ -5,7 +5,6 @@ import unittest
 
 import aiohttp
 from aioresponses import aioresponses
-
 from chaturbate_api.client import ChaturbateAPIClient
 from chaturbate_api.event_handlers import event_handlers
 from chaturbate_api.exceptions import ChaturbateServerError
