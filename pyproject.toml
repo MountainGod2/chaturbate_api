@@ -103,6 +103,7 @@ python-dotenv = "^1.0.1"
 pytest = "^8.0.2"
 aiohttp = "^3.9.3"
 aioresponses = "^0.7.6"
+pytest-cov = "^4.1.0"
 
 [build-system]
 requires = ["poetry-core"]
