@@ -2,7 +2,6 @@ on:
   push:
     tags:
       - v*
-
 jobs:
   pypi-publish:
     name: Upload release to PyPI
@@ -11,11 +10,7 @@ jobs:
       name: pypi
       url: https://pypi.org/p/chaturbate-api
     permissions:
-      id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
+      id-token: write # IMPORTANT
     steps:
-    - name: Publish package distributions to PyPI
-      uses: pypa/gh-action-pypi-publish@release/v1
-    # - name: Publish package distributions to TestPyPI
-    #   uses: pypa/gh-action-pypi-publish@release/v1
-    #   with:
-    #     repository-url: https://test.pypi.org/legacy/
+      - name: Publish package distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
