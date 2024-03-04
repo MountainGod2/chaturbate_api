@@ -1,4 +1,4 @@
-name: test
+name: Install poetry and run tests
 
 on: pull_request
 
